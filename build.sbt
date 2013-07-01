@@ -14,7 +14,7 @@ libraryDependencies ++= Seq(
 
 publishTo <<= version { version => 
   if (version.endsWith("SNAPSHOT"))
-    Some("Typesafe Maven Releases Repository" at "https://typesafe.artifactoryonline.com/typesafe/maven-releases/")
-  else
     Some("Typesafe Maven Snapshots Repository" at "https://typesafe.artifactoryonline.com/typesafe/maven-snapshots/")
+  else
+    Some("Typesafe Maven Releases Repository" at "https://typesafe.artifactoryonline.com/typesafe/maven-releases/")
 }
