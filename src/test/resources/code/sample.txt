@@ -1,0 +1,44 @@
+
+#simple
+Snippet
+#simple
+
+#indent
+    deep
+  shallow
+#indent
+
+// #otherchars //
+Snippet
+// #otherchars //
+
+#skipping
+skipped ###skip
+Snippet
+#skipping
+
+#skipmultiple
+// ###skip: 1
+skipped
+Snippet
+#skipmultiple
+
+#replacing
+// ###replace: Replaced
+foobar
+Snippet
+#replacing
+
+#replacelimited
+// ###replace: Replaced###
+foobar
+#replacelimited
+
+#inserting
+// ###insert: Inserted
+Snippet
+#inserting
+
+#insertlimited
+// ###insert: Inserted###
+#insertlimited
