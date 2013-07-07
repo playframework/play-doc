@@ -12,6 +12,8 @@ libraryDependencies ++= Seq(
   "org.specs2" %% "specs2" % "1.12.3" % "test"
 )
 
+javacOptions ++= Seq("-source", "1.5", "-target", "1.5")
+
 publishTo <<= version { version => 
   if (version.endsWith("SNAPSHOT"))
     Some("Typesafe Maven Snapshots Repository" at "https://typesafe.artifactoryonline.com/typesafe/maven-snapshots/")
