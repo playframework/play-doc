@@ -139,9 +139,9 @@ class PlayDoc(markdownRepository: FileRepository, codeRepository: FileRepository
           repo(pagePath + source)
         }
 
+        val labelPattern = ("""\s*#\Q""" + label + """\E(\s|\z)""").r
         val segment = sourceFile.flatMap { sourceCode =>
-
-          val notLabel = (s: String) => !s.contains("#" + label)
+          val notLabel = (s: String) => labelPattern.findFirstIn(s).isEmpty
           val segment = sourceCode dropWhile (notLabel) drop (1) takeWhile (notLabel)
           if (segment.isEmpty) {
             None

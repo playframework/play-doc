@@ -1,6 +1,6 @@
 package play.doc
 
-import org.specs2.mutable.Specification
+import org.specs2.mutable._
 import java.io.File
 
 object PlayDocSpec extends Specification {
@@ -15,7 +15,21 @@ object PlayDocSpec extends Specification {
         """<pre><code class="txt">""" + rendered + """</code></pre>"""
     }
 
+    def failTest(label:String) = {
+      renderer.render("@[" + label + "](code/sample.txt)") must_==
+              """Unable to find label """ + label + """ in source file """ + "code/sample.txt"
+    }
+
     "allow extracting code snippets" in test("simple", "Snippet")
+
+    "allow extracting code snippets using string that exists as substring elsewhere" in test("one", "One")
+    "allow extracting code snippets using string as full string" in test("onetwothree", "One Two Three") // paired with previous test
+    "fail on substring code snippets using string as trailing" in failTest("three") // paired with previous test
+
+    "fail on substring with no full string match" in failTest("leading")
+    "should match on full string" in test("leading-following", "Leading Following") // paired with test for exception
+    "fail on substring when looking for a trailing match" in failTest("following")
+
     "strip indent of shallowest line" in test("indent", "  deep\nshallow")
     "ignore other characters on label delimiter line" in test("otherchars", "Snippet")
     "allow skipping lines" in test("skipping", "Snippet")
