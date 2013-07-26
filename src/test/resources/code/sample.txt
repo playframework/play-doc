@@ -3,6 +3,18 @@
 Snippet
 #simple
 
+#leading-following
+Leading Following
+#leading-following
+
+#onetwothree
+One Two Three
+#onetwothree
+
+#one
+One
+#one
+
 #indent
     deep
   shallow
