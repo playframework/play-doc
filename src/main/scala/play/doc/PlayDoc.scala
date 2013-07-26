@@ -1,12 +1,13 @@
 package play.doc
 
 import java.io.File
-import java.util.Arrays
+import java.util.{Collections, Arrays}
 import org.pegdown._
 import org.pegdown.plugins.{ToHtmlSerializerPlugin, PegDownPlugins}
-import org.pegdown.ast.{VerbatimNode, Visitor, Node, WikiLinkNode}
+import org.pegdown.ast._
 import org.apache.commons.io.IOUtils
 import scala.collection.JavaConverters._
+import scala.Some
 
 /**
  * Play documentation support
@@ -14,8 +15,12 @@ import scala.collection.JavaConverters._
  * @param markdownRepository Repository for finding markdown files
  * @param codeRepository Repository for finding code samples
  * @param resources The resources path
+ * @param playVersion The version of Play we are rendering docs for.
  */
-class PlayDoc(markdownRepository: FileRepository, codeRepository: FileRepository, resources: String) {
+class PlayDoc(markdownRepository: FileRepository, codeRepository: FileRepository, resources: String,
+              playVersion: String) {
+
+  val PlayVersionVariableName = "%PLAY_VERSION%"
 
   /**
    * Render some markdown.
@@ -92,11 +97,18 @@ class PlayDoc(markdownRepository: FileRepository, codeRepository: FileRepository
 
     // Markdown parser
     val processor = new PegDownProcessor(Extensions.ALL, PegDownPlugins.builder()
-      .withPlugin(classOf[CodeReferenceParser]).build)
+      .withPlugin(classOf[CodeReferenceParser])
+      .withPlugin(classOf[VariableParser], PlayVersionVariableName)
+      .build)
 
     // ToHtmlSerializer's are stateful and so not reusable
-    def htmlSerializer = new ToHtmlSerializer(links, Arrays.asList[ToHtmlSerializerPlugin](
-      new CodeReferenceSerializer(relativePath.map(_.getPath + "/").getOrElse("")))
+    def htmlSerializer = new ToHtmlSerializer(links,
+      Collections.singletonMap(VerbatimSerializer.DEFAULT,
+        new VerbatimSerializerWrapper(DefaultVerbatimSerializer.INSTANCE)),
+      Arrays.asList[ToHtmlSerializerPlugin](
+        new CodeReferenceSerializer(relativePath.map(_.getPath + "/").getOrElse("")),
+        new VariableSerializer(Map(PlayVersionVariableName -> FastEncoder.encode(playVersion)))
+      )
     )
 
     def render(markdown: String): String = {
@@ -204,6 +216,23 @@ class PlayDoc(markdownRepository: FileRepository, codeRepository: FileRepository
         }
       }
       case _ => false
+    }
+  }
+
+  private class VariableSerializer(variables: Map[String, String]) extends ToHtmlSerializerPlugin {
+    def visit(node: Node, visitor: Visitor, printer: Printer) = node match {
+      case variable: VariableNode => {
+        new TextNode(variables.get(variable.getName).getOrElse("Unknown variable: " + variable.getName)).accept(visitor)
+        true
+      }
+      case _ => false
+    }
+  }
+
+  private class VerbatimSerializerWrapper(wrapped: VerbatimSerializer) extends VerbatimSerializer {
+    def serialize(node: VerbatimNode, printer: Printer) {
+      val text = node.getText.replaceAll(PlayVersionVariableName, playVersion)
+      wrapped.serialize(new VerbatimNode(text, node.getType), printer)
     }
   }
 }

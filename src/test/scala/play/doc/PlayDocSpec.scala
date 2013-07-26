@@ -7,7 +7,7 @@ object PlayDocSpec extends Specification {
 
   def fileFromClasspath(name: String) = new File(Thread.currentThread.getContextClassLoader.getResource(name).toURI)
   val repo = new FilesystemRepository(fileFromClasspath("file-placeholder").getParentFile)
-  val renderer = new PlayDoc(repo, repo, "resources")
+  val renderer = new PlayDoc(repo, repo, "resources", "2.1.3")
 
   "code snippet handling" should {
     def test(label: String, rendered: String) = {
@@ -42,6 +42,21 @@ object PlayDocSpec extends Specification {
         }
       }
 
+    }
+  }
+
+  "play version variables" should {
+    "be substituted with the Play version" in {
+      renderer.render("The current Play version is %PLAY_VERSION%") must_== "<p>The current Play version is 2.1.3</p>"
+    }
+    "work in verbatim blocks" in {
+      renderer.render(
+        """
+          | Here is some code:
+          |
+          |     addSbtPlugin("com.typesafe.play" % "sbt-plugin" % "%PLAY_VERSION%")
+          |
+        """.stripMargin) must contain("% &quot;2.1.3&quot;)")
     }
   }
 

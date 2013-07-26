@@ -40,3 +40,8 @@ In some rare cases, you may need to slightly modify the snippet as it stands.  T
     //#label
 
 The supported directives are replace, skip (followed by the number of lines to skip) and insert.
+
+Play Version
+===
+
+Any %PLAY_VERSION% variables will be substituted with the current version of Play.
