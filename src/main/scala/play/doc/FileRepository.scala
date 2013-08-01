@@ -2,20 +2,46 @@ package play.doc
 
 import java.io.{FileInputStream, File, InputStream}
 import java.util.jar.JarFile
+import java.util.zip.ZipEntry
 import scala.collection.JavaConverters._
+
+/**
+ * Access to file data, provided to the handler when `handleFile` is called.
+ *
+ * @param name The name of the file.
+ * @param size The size of the file in bytes.
+ * @param is A stream with the file data.
+ * @param close Used by the handler to close the file when the handler is finished.
+ */
+case class FileHandle(name: String, size: Long, is: InputStream, close: () => Unit)
 
 /**
  * Repository for loading files
  */
 trait FileRepository {
   /**
-   * Load a file using the given loader
+   * Load a file using the given loader. If the file is found then the
+   * file will be opened and loader will be called with its content. The
+   * file will be closed automatically when loader returns a value or throws
+   * an exception.
    *
    * @param path The path of the file to load
    * @param loader The loader to load the file
    * @return The file, as loaded by the loader, or None if the doesn't exist
    */
   def loadFile[A](path: String)(loader: InputStream => A): Option[A]
+
+  /**
+   * Load a file using the given handler.  If the file is found then the
+   * file will be opened and handler will be called with the file's handle. The
+   * handler must call the close method on the handle to ensure that the file is closed
+   * properly.
+   *
+   * @param path The path of the file to load
+   * @param handler The handler to handle the file
+   * @return The file, as loaded by the loader, or None if the doesn't exist
+   */
+  def handleFile[A](path: String)(handler: FileHandle => A): Option[A]
 
   /**
    * Find a file with the given name.  The repositories directory structure is searched, and the
@@ -42,13 +68,23 @@ class FilesystemRepository(base: File) extends FileRepository {
     }
   }
 
-  def loadFile[A](path: String)(loader: InputStream => A) = {
+  private def getFile(path: String): Option[File] = {
     val file = new File(base, path)
-    if (file.exists() && file.isFile && file.canRead) {
+    if (file.exists() && file.isFile && file.canRead) Some(file) else None
+  }
+
+  def loadFile[A](path: String)(loader: InputStream => A) = {
+    getFile(path).map { file =>
       val is = new FileInputStream(file)
-      Some(cleanUp(loader)(is))
-    } else {
-      None
+      cleanUp(loader)(is)
+    }
+  }
+
+  def handleFile[A](path: String)(handler: FileHandle => A) = {
+    getFile(path).map { file =>
+      val is = new FileInputStream(file)
+      val handle = FileHandle(file.getName, file.length, is, () => is.close())
+      handler(handle)
     }
   }
 
@@ -67,14 +103,27 @@ class FilesystemRepository(base: File) extends FileRepository {
  */
 class JarRepository(jarFile: JarFile, base: Option[String] = None) extends FileRepository {
 
-  def loadFile[A](path: String)(loader: (InputStream) => A) = {
-    Option(jarFile.getEntry(base.map(_ + "/" + path).getOrElse(path))).flatMap { entry =>
-      Option(jarFile.getInputStream(entry))
-    } map(loader)
+  private val PathSeparator = "/"
+
+  def getEntry(path: String): Option[(ZipEntry, InputStream)] = {
+    Option(jarFile.getEntry(base.map(_ + PathSeparator + path).getOrElse(path))).flatMap {
+      entry => Option(jarFile.getInputStream(entry)).map(is => (entry, is))
+    }
+  }
+
+  def loadFile[A](path: String)(loader: InputStream => A) = {
+    getEntry(path).map { case (_, is) => loader(is) }
+  }
+
+  def handleFile[A](path: String)(handler: FileHandle => A) = {
+    getEntry(path).map { case (entry, is) =>
+      val handle = FileHandle(entry.getName.split(PathSeparator).last, entry.getSize, is, () => is.close())
+      handler(handle)
+    }
   }
 
   def findFileWithName(name: String) = {
-    val slashName = "/" + name
+    val slashName = PathSeparator + name
     jarFile.entries().asScala.find { entry =>
       entry.getName match {
         case n if n.length == name.length => n.equalsIgnoreCase(name)
