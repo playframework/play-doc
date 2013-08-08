@@ -55,8 +55,8 @@ object FileRepositorySpec extends Specification {
   }
 
   "JarRepository" should {
-    def withJarRepo[T](block: JarRepository => T): T = {
-      val repo = new JarRepository(new JarFile(fileFromClasspath("example-jar-repo.jar")))
+    def withJarRepo[T](base: Option[String])(block: JarRepository => T): T = {
+      val repo = new JarRepository(new JarFile(fileFromClasspath("example-jar-repo.jar")), base)
       try {
         block(repo)
       } finally {
@@ -64,9 +64,9 @@ object FileRepositorySpec extends Specification {
       }
     }
 
-    def loadFile(path: String) = withJarRepo(loadFileFromRepo(_, path))
-    def handleFile(path: String) = withJarRepo(handleFileFromRepo(_, path))
-    def findFileWithName(name: String) = withJarRepo(_.findFileWithName(name))
+    def loadFile(path: String) = withJarRepo(None)(loadFileFromRepo(_, path))
+    def handleFile(path: String) = withJarRepo(None)(handleFileFromRepo(_, path))
+    def findFileWithName(name: String) = withJarRepo(None)(_.findFileWithName(name))
 
     "load a file" in {
       loadFile("example/docs/Foo.md") must beSome("Some markdown")
@@ -98,6 +98,10 @@ object FileRepositorySpec extends Specification {
 
     "return none when a file with a name is a directory" in {
       findFileWithName("docs") must beNone
+    }
+
+    "find a file with a name in base directory" in {
+      withJarRepo(Some("example"))(_.findFileWithName("Foo.md")) must beSome("docs/Foo.md")
     }
   }
 }
