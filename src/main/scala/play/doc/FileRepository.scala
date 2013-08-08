@@ -104,9 +104,10 @@ class FilesystemRepository(base: File) extends FileRepository {
 class JarRepository(jarFile: JarFile, base: Option[String] = None) extends FileRepository {
 
   private val PathSeparator = "/"
+  private val basePrefix = base.map(_ + PathSeparator).getOrElse("")
 
   def getEntry(path: String): Option[(ZipEntry, InputStream)] = {
-    Option(jarFile.getEntry(base.map(_ + PathSeparator + path).getOrElse(path))).flatMap {
+    Option(jarFile.getEntry(basePrefix + path)).flatMap {
       entry => Option(jarFile.getInputStream(entry)).map(is => (entry, is))
     }
   }
@@ -123,14 +124,18 @@ class JarRepository(jarFile: JarFile, base: Option[String] = None) extends FileR
   }
 
   def findFileWithName(name: String) = {
+    def startsWith(full: String, part: String) = if (part.isEmpty) true else {
+      val comparePart = if (full.length == part.length) full else full.take(part.length)
+      comparePart.equalsIgnoreCase(part)
+    }
+    def endsWith(full: String, part: String) = if (part.isEmpty) true else {
+      val comparePart = if (full.length == part.length) full else full.takeRight(part.length)
+      comparePart.equalsIgnoreCase(part)
+    }
+
     val slashName = PathSeparator + name
-    jarFile.entries().asScala.find { entry =>
-      entry.getName match {
-        case n if n.length == name.length => n.equalsIgnoreCase(name)
-        case n if n.length > name.length => n.takeRight(name.length + 1).equalsIgnoreCase(slashName)
-        case _ => false
-      }
-    }.map(_.getName)
+    val found = jarFile.entries().asScala.map(_.getName).find(n => startsWith(n, basePrefix) && endsWith(n, slashName))
+    found.map(_.substring(basePrefix.length))
   }
 
   def close() = jarFile.close()
