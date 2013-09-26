@@ -104,12 +104,16 @@ class PlayDoc(markdownRepository: FileRepository, codeRepository: FileRepository
     // ToHtmlSerializer's are stateful and so not reusable
     def htmlSerializer = new ToHtmlSerializer(links,
       Collections.singletonMap(VerbatimSerializer.DEFAULT,
-        new VerbatimSerializerWrapper(DefaultVerbatimSerializer.INSTANCE)),
+        new VerbatimSerializerWrapper(PrettifyVerbatimSerializer)),
       Arrays.asList[ToHtmlSerializerPlugin](
         new CodeReferenceSerializer(relativePath.map(_.getPath + "/").getOrElse("")),
         new VariableSerializer(Map(PlayVersionVariableName -> FastEncoder.encode(playVersion)))
       )
-    )
+    ){
+      override def visit(node: CodeNode) {
+        super.visit(new CodeNode(node.getText.replace(PlayVersionVariableName, playVersion)))
+      }
+    }
 
     def render(markdown: String): String = {
       val astRoot = processor.parseMarkdown(markdown.toCharArray)
@@ -231,7 +235,7 @@ class PlayDoc(markdownRepository: FileRepository, codeRepository: FileRepository
 
   private class VerbatimSerializerWrapper(wrapped: VerbatimSerializer) extends VerbatimSerializer {
     def serialize(node: VerbatimNode, printer: Printer) {
-      val text = node.getText.replaceAll(PlayVersionVariableName, playVersion)
+      val text = node.getText.replace(PlayVersionVariableName, playVersion)
       wrapped.serialize(new VerbatimNode(text, node.getType), printer)
     }
   }

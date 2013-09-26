@@ -12,7 +12,7 @@ object PlayDocSpec extends Specification {
   "code snippet handling" should {
     def test(label: String, rendered: String) = {
       renderer.render("@[" + label + "](code/sample.txt)") must_==
-        """<pre><code class="txt">""" + rendered + """</code></pre>"""
+        """<pre class="prettyprint"><code class="language-txt">""" + rendered + """</code></pre>"""
     }
 
     def failTest(label:String) = {
@@ -71,6 +71,9 @@ object PlayDocSpec extends Specification {
           |     addSbtPlugin("com.typesafe.play" % "sbt-plugin" % "%PLAY_VERSION%")
           |
         """.stripMargin) must contain("% &quot;2.1.3&quot;)")
+    }
+    "work in code blocks" in {
+      renderer.render("Play `%PLAY_VERSION%` is cool.") must_== "<p>Play <code>2.1.3</code> is cool.</p>"
     }
   }
 
