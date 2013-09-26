@@ -16,7 +16,7 @@ javacOptions ++= Seq("-source", "1.5", "-target", "1.5")
 
 publishTo <<= version { version => 
   if (version.endsWith("SNAPSHOT"))
-    Some("Typesafe Maven Snapshots Repository" at "https://typesafe.artifactoryonline.com/typesafe/maven-snapshots/")
+    Some("Typesafe Maven Snapshots Repository" at "https://private-repo.typesafe.com/typesafe/maven-snapshots/")
   else
-    Some("Typesafe Maven Releases Repository" at "https://typesafe.artifactoryonline.com/typesafe/maven-releases/")
+    Some("Typesafe Maven Releases Repository" at "https://private-repo.typesafe.com/typesafe/maven-releases/")
 }
