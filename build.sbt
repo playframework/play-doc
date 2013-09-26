@@ -2,7 +2,7 @@ organization := "com.typesafe.play"
 
 name := "play-doc"
 
-version := "1.0-SNAPSHOT"
+version := "1.0.4"
 
 crossScalaVersions := Seq("2.9.2", "2.10.0")
 
