@@ -44,7 +44,7 @@ object PlayDocSpec extends Specification {
     "render the page and the sidebar" in {
       val result = renderer.renderPage("Foo")
       result must beSome.like {
-        case (main, maybeSidebar) => {
+        case RenderedPage(main, maybeSidebar, path) => {
           main must contain("Some markdown")
           main must not contain("Sidebar")
           maybeSidebar must beSome.like {
@@ -53,6 +53,7 @@ object PlayDocSpec extends Specification {
               sidebar must not contain("Some markdown")
             }
           }
+          path must_== "example/docs/Foo.md"
         }
       }
 

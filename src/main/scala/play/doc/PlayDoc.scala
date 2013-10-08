@@ -10,6 +10,15 @@ import scala.collection.JavaConverters._
 import scala.Some
 
 /**
+ * A rendered page
+ *
+ * @param html The HTML for the page
+ * @param sidebarHtml The HTML for the sidebar
+ * @param path The path that the page was found at
+ */
+case class RenderedPage(html: String, sidebarHtml: Option[String], path: String)
+
+/**
  * Play documentation support
  *
  * @param markdownRepository Repository for finding markdown files
@@ -35,7 +44,7 @@ class PlayDoc(markdownRepository: FileRepository, codeRepository: FileRepository
    * @param page The page to render, without path or markdown extension.
    * @return If found a tuple of the rendered page and the rendered sidebar, if the sidebar was found.
    */
-  def renderPage(page: String): Option[(String, Option[String])] = {
+  def renderPage(page: String): Option[RenderedPage] = {
 
     // Find the markdown file
     markdownRepository.findFileWithName(page + ".md").flatMap { pagePath =>
@@ -61,7 +70,7 @@ class PlayDoc(markdownRepository: FileRepository, codeRepository: FileRepository
 
         // Render both the markdown and the sidebar
         render(pagePath).map { markdown =>
-          (markdown, findSideBar(relativePath))
+          RenderedPage(markdown, findSideBar(relativePath), pagePath)
         }
       }
     }
