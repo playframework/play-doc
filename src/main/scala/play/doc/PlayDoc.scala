@@ -88,7 +88,7 @@ class PlayDoc(markdownRepository: FileRepository, codeRepository: FileRepository
         val link = image match {
           case full if full.startsWith("http://") => full
           case absolute if absolute.startsWith("/") => resources + absolute
-          case relative => resources + "/" + relativePath.map(_.getPath + "/").getOrElse("") + relative
+          case relative => resources + "/" + relativePath.map(_.getPath.replace("\\", "/") + "/").getOrElse("") + relative
         }
         (link, """<img src="""" + link + """"/>""")
       }
