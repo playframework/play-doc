@@ -161,7 +161,7 @@ class PlayDoc(markdownRepository: FileRepository, codeRepository: FileRepository
         val sourceFile = if (source.startsWith("/")) {
           repo(source.drop(1))
         } else {
-          repo(pagePath + source)
+          repo(pagePath.replace("\\", "/"") + source)
         }
 
         val labelPattern = ("""\s*#\Q""" + label + """\E(\s|\z)""").r
