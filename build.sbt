@@ -2,17 +2,19 @@ organization := "com.typesafe.play"
 
 name := "play-doc"
 
-version := "1.0.5"
+version := "1.1.0"
 
-crossScalaVersions := Seq("2.9.2", "2.10.0")
+crossScalaVersions := Seq("2.10.4", "2.11.0")
+
+scalaVersion := "2.11.0"
 
 libraryDependencies ++= Seq(
   "org.pegdown" % "pegdown" % "1.4.0",
   "commons-io" % "commons-io" % "2.4",
-  "org.specs2" %% "specs2" % "1.12.3" % "test"
+  "org.specs2" %% "specs2" % "2.3.11" % "test"
 )
 
-javacOptions ++= Seq("-source", "1.5", "-target", "1.5")
+javacOptions ++= Seq("-source", "1.6", "-target", "1.6")
 
 publishTo <<= version { version => 
   if (version.endsWith("SNAPSHOT"))
