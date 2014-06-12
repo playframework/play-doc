@@ -111,16 +111,26 @@ class PlayDoc(markdownRepository: FileRepository, codeRepository: FileRepository
       .build)
 
     // ToHtmlSerializer's are stateful and so not reusable
-    def htmlSerializer = new ToHtmlSerializer(links,
-      Collections.singletonMap(VerbatimSerializer.DEFAULT,
-        new VerbatimSerializerWrapper(PrettifyVerbatimSerializer)),
-      Arrays.asList[ToHtmlSerializerPlugin](
-        new CodeReferenceSerializer(relativePath.map(_.getPath + "/").getOrElse("")),
-        new VariableSerializer(Map(PlayVersionVariableName -> FastEncoder.encode(playVersion)))
-      )
-    ){
-      override def visit(node: CodeNode) {
-        super.visit(new CodeNode(node.getText.replace(PlayVersionVariableName, playVersion)))
+    def htmlSerializer = {
+      // Workaround as Pegdown don't use plugins for SuperNode like HeaderNode
+      // for now -> https://github.com/sirthias/pegdown/blob/cc862769ba6906258d8d2321dd2dd0ceb5d7348f/src/main/java/org/pegdown/ToHtmlSerializer.java#L353
+      val hs = new HeaderSerializer(links)
+
+      new ToHtmlSerializer(links,
+        Collections.singletonMap(VerbatimSerializer.DEFAULT,
+          new VerbatimSerializerWrapper(PrettifyVerbatimSerializer)),
+        Arrays.asList[ToHtmlSerializerPlugin](
+          new CodeReferenceSerializer(relativePath.fold("")(_.getPath + "/")),
+          new VariableSerializer(Map(
+            PlayVersionVariableName -> FastEncoder.encode(playVersion)))
+        )
+      ){
+        override def visit(node: CodeNode) {
+          super.visit(new CodeNode(node.getText.
+            replace(PlayVersionVariableName, playVersion)))
+        }
+
+        override def visit(h: HeaderNode) { hs.visit(h, this, this.printer) }
       }
     }
 
@@ -236,6 +246,36 @@ class PlayDoc(markdownRepository: FileRepository, codeRepository: FileRepository
     def visit(node: Node, visitor: Visitor, printer: Printer) = node match {
       case variable: VariableNode => {
         new TextNode(variables.get(variable.getName).getOrElse("Unknown variable: " + variable.getName)).accept(visitor)
+        true
+      }
+      case _ => false
+    }
+  }
+
+  private class HeaderSerializer(links: LinkRenderer) 
+      extends ToHtmlSerializerPlugin {
+
+    @inline def anchor(text: String): String = text map { 
+      case ch if ((ch >= 'a' && ch <= 'z') || 
+          (ch >= 'A' && ch <= 'Z') || (ch >= '0' && ch <= '9')) => ch.toLower
+      case _ => '-' 
+    }
+
+    private class ChildSerializer(l: LinkRenderer) extends ToHtmlSerializer(l) {
+      def buffer = printer.sb.toString
+    }
+
+    def visit(node: Node, visitor: Visitor, printer: Printer) = node match {
+      case h: HeaderNode => {
+        val childser = h.getChildren.asScala.
+          foldLeft(new ChildSerializer(links)) { (s, n) => n.accept(s); s }
+
+        val (tag, text) = ("h" + h.getLevel, childser.buffer)
+
+        printer.print('<').print(tag).print("""><a name="""").
+          print(anchor(text)).print("""">""").print(text).
+          print("</a></").print(tag).print('>')
+
         true
       }
       case _ => false
