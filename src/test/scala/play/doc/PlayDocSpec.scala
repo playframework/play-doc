@@ -78,4 +78,13 @@ object PlayDocSpec extends Specification {
     }
   }
 
+  "play header" should {
+    "be h1 with anchor" in {
+      renderer.render("# Header level 1") must_== """<h1><a name="header-level-1">Header level 1</a></h1>"""
+    }
+
+    "be h3 with anchor" in {
+      renderer.render("###   % Header § level 3 ") must_== """<h3><a name="--header---level-3">% Header § level 3</a></h3>"""
+    }
+  }
 }
