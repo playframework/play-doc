@@ -4,9 +4,9 @@ name := "play-doc"
 
 version := "1.1.0"
 
-crossScalaVersions := Seq("2.10.4", "2.11.0")
+crossScalaVersions := Seq("2.10.4", "2.11.1")
 
-scalaVersion := "2.11.0"
+scalaVersion := "2.11.1"
 
 libraryDependencies ++= Seq(
   "org.pegdown" % "pegdown" % "1.4.0",
@@ -16,7 +16,7 @@ libraryDependencies ++= Seq(
 
 javacOptions ++= Seq("-source", "1.6", "-target", "1.6")
 
-publishTo <<= version { version => 
+publishTo <<= version { version =>
   if (version.endsWith("SNAPSHOT"))
     Some("Typesafe Maven Snapshots Repository" at "https://private-repo.typesafe.com/typesafe/maven-snapshots/")
   else
