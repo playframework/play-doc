@@ -2,11 +2,11 @@ organization := "com.typesafe.play"
 
 name := "play-doc"
 
-version := "1.1.0"
+lazy val root = (project in file(".")).enablePlugins(SbtTwirl)
 
-crossScalaVersions := Seq("2.10.4", "2.11.0")
+crossScalaVersions := Seq("2.10.4", "2.11.1")
 
-scalaVersion := "2.11.0"
+scalaVersion := "2.11.1"
 
 libraryDependencies ++= Seq(
   "org.pegdown" % "pegdown" % "1.4.0",
@@ -16,9 +16,38 @@ libraryDependencies ++= Seq(
 
 javacOptions ++= Seq("-source", "1.6", "-target", "1.6")
 
-publishTo <<= version { version => 
-  if (version.endsWith("SNAPSHOT"))
-    Some("Typesafe Maven Snapshots Repository" at "https://private-repo.typesafe.com/typesafe/maven-snapshots/")
-  else
-    Some("Typesafe Maven Releases Repository" at "https://private-repo.typesafe.com/typesafe/maven-releases/")
+// Publishing
+publishTo := {
+  if (isSnapshot.value) Some(Opts.resolver.sonatypeSnapshots)
+  else Some(Opts.resolver.sonatypeStaging)
 }
+
+homepage := Some(url("https://github.com/playframework/play-doc"))
+
+licenses := Seq("Apache 2" -> url("http://www.apache.org/licenses/LICENSE-2.0"))
+
+pomExtra := {
+  <scm>
+    <url>https://github.com/playframework/play-doc</url>
+    <connection>scm:git:git@github.com:playframework/play-doc.git</connection>
+  </scm>
+  <developers>
+    <developer>
+      <id>jroper</id>
+      <name>James Roper</name>
+      <url>https://jazzy.id.au</url>
+    </developer>
+    <developer>
+      <id>richdougherty</id>
+      <name>Rich Dougherty</name>
+      <url>http://www.richdougherty.com</url>
+    </developer>
+    <developer>
+      <id>wsargent</id>
+      <name>Will Sargent</name>
+      <url>https://github.com/wsargent</url>
+    </developer>
+  </developers>
+}
+
+pomIncludeRepository := { _ => false }

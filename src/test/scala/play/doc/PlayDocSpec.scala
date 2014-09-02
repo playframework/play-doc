@@ -7,16 +7,18 @@ object PlayDocSpec extends Specification {
 
   def fileFromClasspath(name: String) = new File(Thread.currentThread.getContextClassLoader.getResource(name).toURI)
   val repo = new FilesystemRepository(fileFromClasspath("file-placeholder").getParentFile)
-  val renderer = new PlayDoc(repo, repo, "resources", "2.1.3")
+  val oldRenderer = new PlayDoc(repo, repo, "resources", "2.1.3", None)
+
+  val renderer = new PlayDoc(repo, repo, "resources", "2.4.0", PageIndex.parseFrom(repo, Some("example")))
 
   "code snippet handling" should {
     def test(label: String, rendered: String) = {
-      renderer.render("@[" + label + "](code/sample.txt)") must_==
+      oldRenderer.render("@[" + label + "](code/sample.txt)") must_==
         """<pre class="prettyprint"><code class="language-txt">""" + rendered + """</code></pre>"""
     }
 
     def failTest(label:String) = {
-      renderer.render("@[" + label + "](code/sample.txt)") must_==
+      oldRenderer.render("@[" + label + "](code/sample.txt)") must_==
               """Unable to find label """ + label + """ in source file """ + "code/sample.txt"
     }
 
@@ -41,31 +43,45 @@ object PlayDocSpec extends Specification {
   }
 
   "page rendering" should {
-    "render the page and the sidebar" in {
-      val result = renderer.renderPage("Foo")
-      result must beSome.like {
-        case RenderedPage(main, maybeSidebar, path) => {
-          main must contain("Some markdown")
-          main must not contain("Sidebar")
-          maybeSidebar must beSome.like {
-            case sidebar => {
-              sidebar must contain("Sidebar")
-              sidebar must not contain("Some markdown")
+    "old renderer" in {
+      "render the page and the sidebar" in {
+        val result = oldRenderer.renderPage("Foo")
+        result must beSome.like {
+          case RenderedPage(main, maybeSidebar, path) =>
+            main must contain("Some markdown")
+            main must not contain "Sidebar"
+            maybeSidebar must beSome.like {
+              case sidebar =>
+                sidebar must contain("Sidebar")
+                sidebar must not contain "Some markdown"
             }
-          }
-          path must_== "example/docs/Foo.md"
+            path must_== "example/docs/Foo.md"
         }
       }
+    }
 
+    "new renderer" in {
+      "render the page and sidebar" in {
+        val result = renderer.renderPage("Foo")
+        result must beSome.like {
+          case RenderedPage(main, maybeSidebar, path) =>
+            main must contain("Some markdown")
+            maybeSidebar must beSome.like {
+              case sidebar =>
+                sidebar must contain("<a href=\"Home\">Documentation Home</a>")
+            }
+            path must_== "example/docs/Foo.md"
+        }
+      }
     }
   }
 
   "play version variables" should {
     "be substituted with the Play version" in {
-      renderer.render("The current Play version is %PLAY_VERSION%") must_== "<p>The current Play version is 2.1.3</p>"
+      oldRenderer.render("The current Play version is %PLAY_VERSION%") must_== "<p>The current Play version is 2.1.3</p>"
     }
     "work in verbatim blocks" in {
-      renderer.render(
+      oldRenderer.render(
         """
           | Here is some code:
           |
@@ -74,7 +90,19 @@ object PlayDocSpec extends Specification {
         """.stripMargin) must contain("% &quot;2.1.3&quot;)")
     }
     "work in code blocks" in {
-      renderer.render("Play `%PLAY_VERSION%` is cool.") must_== "<p>Play <code>2.1.3</code> is cool.</p>"
+      oldRenderer.render("Play `%PLAY_VERSION%` is cool.") must_== "<p>Play <code>2.1.3</code> is cool.</p>"
+    }
+  }
+
+  "play table of contents support" should {
+    "render a table of contents" in {
+      renderer.renderPage("Home") must beSome.like {
+        case page =>
+          page.html must contain("<h2>Sub Documentation</h2>")
+          page.html must contain("<a href=\"Foo\">Foo Page</a>")
+          page.html must contain("<a href=\"SubFoo1\">Sub Section</a>")
+          page.html must contain("<a href=\"SubFoo1\">Sub Foo Page 1</a>")
+      }
     }
   }
 

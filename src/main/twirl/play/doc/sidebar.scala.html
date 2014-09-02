@@ -1,0 +1,9 @@
+@*
+ * Renders a sidebar, given a list of table of contents sections
+ *@
+@(heirarchy: List[play.doc.Toc])
+@for(toc <- heirarchy) {<h3>@toc.title</h3>
+<ul>@for(page <- toc.nodes) {
+  <li><a href="@page._2.page">@page._2.title</a></li>}
+</ul>
+}

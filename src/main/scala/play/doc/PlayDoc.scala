@@ -6,8 +6,8 @@ import org.pegdown._
 import org.pegdown.plugins.{ToHtmlSerializerPlugin, PegDownPlugins}
 import org.pegdown.ast._
 import org.apache.commons.io.IOUtils
+import play.doc.html.{toc, sidebar, nextLink}
 import scala.collection.JavaConverters._
-import scala.Some
 
 /**
  * A rendered page
@@ -25,9 +25,11 @@ case class RenderedPage(html: String, sidebarHtml: Option[String], path: String)
  * @param codeRepository Repository for finding code samples
  * @param resources The resources path
  * @param playVersion The version of Play we are rendering docs for.
+ * @param pageIndex An optional page index. If None, will use the old approach of searching up the
+ *                  heirarchy for sidebar pages, otherwise will use the page index to render the sidebar.
  */
 class PlayDoc(markdownRepository: FileRepository, codeRepository: FileRepository, resources: String,
-              playVersion: String) {
+              playVersion: String, pageIndex: Option[PageIndex]) {
 
   val PlayVersionVariableName = "%PLAY_VERSION%"
 
@@ -35,25 +37,53 @@ class PlayDoc(markdownRepository: FileRepository, codeRepository: FileRepository
    * Render some markdown.
    */
   def render(markdown: String, relativePath: Option[File] = None): String = {
-    withRenderer(relativePath)(_(markdown))
+    withRenderer(relativePath.map(_.getPath), None)(_(markdown))
   }
 
   /**
    * Render a Play documentation page.
    *
+   * @param pageName The page to render, without path or markdown extension.
+   * @return If found a tuple of the rendered page and the rendered sidebar, if the sidebar was found.
+   */
+  def renderPage(pageName: String): Option[RenderedPage] = {
+    pageIndex.fold {
+      renderOldPage(pageName)
+    } { index =>
+      index.get(pageName).flatMap { page =>
+        withRenderer(Some(page.path).filter(_.nonEmpty), page.nav.headOption) { renderer =>
+
+          val pagePath = page.fullPath + ".md"
+          val renderedPage = markdownRepository.loadFile(pagePath)(IOUtils.toString).map(renderer)
+
+          renderedPage.map { html =>
+            val withNext = page.next.fold(html) { next =>
+              html + nextLink(next).body
+            }
+            RenderedPage(withNext, Some(sidebar(page.nav).body), pagePath)
+          }
+        }
+      }
+    }
+  }
+
+
+    /**
+   * Render a Play documentation page.
+   *
    * @param page The page to render, without path or markdown extension.
    * @return If found a tuple of the rendered page and the rendered sidebar, if the sidebar was found.
    */
-  def renderPage(page: String): Option[RenderedPage] = {
+  private def renderOldPage(page: String): Option[RenderedPage] = {
 
     // Find the markdown file
     markdownRepository.findFileWithName(page + ".md").flatMap { pagePath =>
 
       val file = new File(pagePath)
       // Work out the relative path for the file
-      val relativePath = Option(file.getParentFile)
+      val relativePath = Option(file.getParentFile).map(_.getPath)
 
-      withRenderer(relativePath) { renderer =>
+      withRenderer(relativePath, None) { renderer =>
 
         def render(path: String): Option[String] = {
           markdownRepository.loadFile(path)(IOUtils.toString).map(renderer)
@@ -70,13 +100,13 @@ class PlayDoc(markdownRepository: FileRepository, codeRepository: FileRepository
 
         // Render both the markdown and the sidebar
         render(pagePath).map { markdown =>
-          RenderedPage(markdown, findSideBar(relativePath), pagePath)
+          RenderedPage(markdown, findSideBar(Option(file.getParentFile)), pagePath)
         }
       }
     }
   }
 
-  private def withRenderer[T](relativePath: Option[File])(block: (String => String) => T): T = {
+  private def withRenderer[T](relativePath: Option[String], toc: Option[Toc])(block: (String => String) => T): T = {
 
     // Link renderer
     val link: (String => (String, String)) = _ match {
@@ -88,7 +118,7 @@ class PlayDoc(markdownRepository: FileRepository, codeRepository: FileRepository
         val link = image match {
           case full if full.startsWith("http://") => full
           case absolute if absolute.startsWith("/") => resources + absolute
-          case relative => resources + "/" + relativePath.map(_.getPath + "/").getOrElse("") + relative
+          case relative => resources + "/" + relativePath.map(_ + "/").getOrElse("") + relative
         }
         (link, """<img src="""" + link + """"/>""")
       }
@@ -108,6 +138,7 @@ class PlayDoc(markdownRepository: FileRepository, codeRepository: FileRepository
     val processor = new PegDownProcessor(Extensions.ALL, PegDownPlugins.builder()
       .withPlugin(classOf[CodeReferenceParser])
       .withPlugin(classOf[VariableParser], PlayVersionVariableName)
+      .withPlugin(classOf[TocParser])
       .build)
 
     // ToHtmlSerializer's are stateful and so not reusable
@@ -115,8 +146,9 @@ class PlayDoc(markdownRepository: FileRepository, codeRepository: FileRepository
       Collections.singletonMap(VerbatimSerializer.DEFAULT,
         new VerbatimSerializerWrapper(PrettifyVerbatimSerializer)),
       Arrays.asList[ToHtmlSerializerPlugin](
-        new CodeReferenceSerializer(relativePath.map(_.getPath + "/").getOrElse("")),
-        new VariableSerializer(Map(PlayVersionVariableName -> FastEncoder.encode(playVersion)))
+        new CodeReferenceSerializer(relativePath.map(_ + "/").getOrElse("")),
+        new VariableSerializer(Map(PlayVersionVariableName -> FastEncoder.encode(playVersion))),
+        new TocSerializer(toc)
       )
     ){
       override def visit(node: CodeNode) {
@@ -246,6 +278,17 @@ class PlayDoc(markdownRepository: FileRepository, codeRepository: FileRepository
     def serialize(node: VerbatimNode, printer: Printer) {
       val text = node.getText.replace(PlayVersionVariableName, playVersion)
       wrapped.serialize(new VerbatimNode(text, node.getType), printer)
+    }
+  }
+
+  private class TocSerializer(maybeToc: Option[Toc]) extends ToHtmlSerializerPlugin {
+    def visit(node: Node, visitor: Visitor, printer: Printer) = node match {
+      case tocNode: TocNode =>
+        maybeToc.fold(false) { t =>
+          printer.print(toc(t).body)
+          true
+        }
+      case _ => false
     }
   }
 }

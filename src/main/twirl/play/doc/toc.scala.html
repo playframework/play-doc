@@ -1,0 +1,16 @@
+@*
+* Renders a table of contents
+*@
+@(toc: play.doc.Toc)
+@import play.doc.Toc
+@renderToc(toc: Toc) = {<ol>@for(node <- toc.nodes) {
+  <li>
+    <a href="@node._2.page">@node._2.title</a>
+@{node match {
+  case (_, toc: Toc) if toc.descend && toc.nodes.size > 1 => renderToc(toc)
+  case _ => ""
+}}</li>}
+</ol>}
+@for(top <- toc.nodes.collect({ case (_, toc: play.doc.Toc) => toc })) {
+<h2>@top.title</h2>
+@renderToc(top)}
