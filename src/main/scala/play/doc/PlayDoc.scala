@@ -27,9 +27,10 @@ case class RenderedPage(html: String, sidebarHtml: Option[String], path: String)
  * @param playVersion The version of Play we are rendering docs for.
  * @param pageIndex An optional page index. If None, will use the old approach of searching up the
  *                  heirarchy for sidebar pages, otherwise will use the page index to render the sidebar.
+ * @param nextText A translation of the word "Next" to render in next links
  */
 class PlayDoc(markdownRepository: FileRepository, codeRepository: FileRepository, resources: String,
-              playVersion: String, pageIndex: Option[PageIndex]) {
+              playVersion: String, pageIndex: Option[PageIndex], nextText: String) {
 
   val PlayVersionVariableName = "%PLAY_VERSION%"
 
@@ -58,7 +59,7 @@ class PlayDoc(markdownRepository: FileRepository, codeRepository: FileRepository
 
           renderedPage.map { html =>
             val withNext = page.next.fold(html) { next =>
-              html + nextLink(next).body
+              html + nextLink(next, nextText).body
             }
             RenderedPage(withNext, Some(sidebar(page.nav).body), pagePath)
           }

@@ -98,8 +98,8 @@ case class Page(page: String, path: String, title: String, nav: List[Toc]) {
 
 object PageIndex {
 
-  def parseFrom(repo: FileRepository, path: Option[String] = None): Option[PageIndex] = {
-    parseToc(repo, path, "", "Home") match {
+  def parseFrom(repo: FileRepository, home: String, path: Option[String] = None): Option[PageIndex] = {
+    parseToc(repo, path, "", home) match {
       case toc: Toc => Some(new PageIndex(toc, path))
       case _ => None
     }

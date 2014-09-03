@@ -8,7 +8,7 @@ object PageIndexSpec extends Specification {
 
   def fileFromClasspath(name: String) = new File(Thread.currentThread.getContextClassLoader.getResource(name).toURI)
   val repo = new FilesystemRepository(fileFromClasspath("file-placeholder").getParentFile)
-  def maybeIndex = PageIndex.parseFrom(repo, Some("example"))
+  def maybeIndex = PageIndex.parseFrom(repo, "Home", Some("example"))
   def index = maybeIndex.getOrElse(new PageIndex(Toc("", "", Nil)))
 
   "Page Index " should {

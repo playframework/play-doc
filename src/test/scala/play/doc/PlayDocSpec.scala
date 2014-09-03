@@ -7,9 +7,9 @@ object PlayDocSpec extends Specification {
 
   def fileFromClasspath(name: String) = new File(Thread.currentThread.getContextClassLoader.getResource(name).toURI)
   val repo = new FilesystemRepository(fileFromClasspath("file-placeholder").getParentFile)
-  val oldRenderer = new PlayDoc(repo, repo, "resources", "2.1.3", None)
+  val oldRenderer = new PlayDoc(repo, repo, "resources", "2.1.3", None, "Next")
 
-  val renderer = new PlayDoc(repo, repo, "resources", "2.4.0", PageIndex.parseFrom(repo, Some("example")))
+  val renderer = new PlayDoc(repo, repo, "resources", "2.4.0", PageIndex.parseFrom(repo, "Home", Some("example")), "Next")
 
   "code snippet handling" should {
     def test(label: String, rendered: String) = {
