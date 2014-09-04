@@ -4,6 +4,8 @@ name := "play-doc"
 
 lazy val root = (project in file(".")).enablePlugins(SbtTwirl)
 
+releaseSettings
+
 crossScalaVersions := Seq("2.10.4", "2.11.1")
 
 scalaVersion := "2.11.1"
@@ -21,6 +23,11 @@ publishTo := {
   if (isSnapshot.value) Some(Opts.resolver.sonatypeSnapshots)
   else Some(Opts.resolver.sonatypeStaging)
 }
+
+ReleaseKeys.crossBuild := true
+
+// When https://github.com/sbt/sbt-release/pull/49 is fixed, this can be updated to not be so hacky
+publish := PgpKeys.publishSigned.value
 
 homepage := Some(url("https://github.com/playframework/play-doc"))
 
