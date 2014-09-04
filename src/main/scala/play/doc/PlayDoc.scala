@@ -32,6 +32,9 @@ case class RenderedPage(html: String, sidebarHtml: Option[String], path: String)
 class PlayDoc(markdownRepository: FileRepository, codeRepository: FileRepository, resources: String,
               playVersion: String, pageIndex: Option[PageIndex], nextText: String) {
 
+  def this(markdownRepository: FileRepository, codeRepository: FileRepository, resources: String,
+    playVersion: String) = this(markdownRepository, codeRepository, resources, playVersion, None, "")
+
   val PlayVersionVariableName = "%PLAY_VERSION%"
 
   /**
