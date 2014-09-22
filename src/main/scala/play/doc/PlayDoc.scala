@@ -30,7 +30,7 @@ case class RenderedPage(html: String, sidebarHtml: Option[String], path: String)
  * @param nextText A translation of the word "Next" to render in next links
  */
 class PlayDoc(markdownRepository: FileRepository, codeRepository: FileRepository, resources: String,
-              playVersion: String, pageIndex: Option[PageIndex], nextText: String) {
+              playVersion: String, val pageIndex: Option[PageIndex], nextText: String) {
 
   def this(markdownRepository: FileRepository, codeRepository: FileRepository, resources: String,
     playVersion: String) = this(markdownRepository, codeRepository, resources, playVersion, None, "")
@@ -71,8 +71,36 @@ class PlayDoc(markdownRepository: FileRepository, codeRepository: FileRepository
     }
   }
 
+  /**
+   * Render all the pages of the documentation
+   *
+   * @param singlePage Whether the pages are being rendered to be formatted on a single page
+   */
+  def renderAllPages(singlePage: Boolean): List[(String, String)] = {
+    pageIndex match {
+      case Some(idx) =>
+        def collectPagesInOrder(node: TocTree): List[String] = {
+          node match {
+            case TocPage(page, _) => List(page)
+            case toc: Toc => toc.nodes.flatMap(n => collectPagesInOrder(n._2))
+          }
+        }
+        val pages = collectPagesInOrder(idx.toc)
+        pages.flatMap { pageName =>
+          idx.get(pageName).flatMap { page =>
+            withRenderer(Some(page.path).filter(_.nonEmpty), page.nav.headOption, singlePage = singlePage) { renderer =>
+              val pagePath = page.fullPath + ".md"
+              markdownRepository.loadFile(pagePath)(IOUtils.toString).map(renderer)
+            }
+          }.map { pageName -> _ }
+        }
+      case None =>
+        throw new IllegalStateException("Can only render all pages if there's a page index")
+    }
+  }
 
-    /**
+
+  /**
    * Render a Play documentation page.
    *
    * @param page The page to render, without path or markdown extension.
@@ -87,48 +115,46 @@ class PlayDoc(markdownRepository: FileRepository, codeRepository: FileRepository
       // Work out the relative path for the file
       val relativePath = Option(file.getParentFile).map(_.getPath)
 
-      withRenderer(relativePath, None) { renderer =>
-
-        def render(path: String): Option[String] = {
+      def render(path: String, headerIds: Boolean = true): Option[String] = {
+        withRenderer(relativePath, None, headerIds = headerIds) { renderer =>
           markdownRepository.loadFile(path)(IOUtils.toString).map(renderer)
         }
+      }
 
-        // Recursively search for Sidebar
-        def findSideBar(file: Option[File]): Option[String] = file match {
-          case None => None
-          case Some(parent) => {
-            val sidebar = render(parent.getPath + "/_Sidebar.md")
-            sidebar.orElse(findSideBar(Option(parent.getParentFile)))
-          }
-        }
+      // Recursively search for Sidebar
+      def findSideBar(file: Option[File]): Option[String] = file match {
+        case None => None
+        case Some(parent) =>
+          val sidebar = render(parent.getPath + "/_Sidebar.md", headerIds = false)
+          sidebar.orElse(findSideBar(Option(parent.getParentFile)))
+      }
 
-        // Render both the markdown and the sidebar
-        render(pagePath).map { markdown =>
-          RenderedPage(markdown, findSideBar(Option(file.getParentFile)), pagePath)
-        }
+      // Render both the markdown and the sidebar
+      render(pagePath).map { markdown =>
+        RenderedPage(markdown, findSideBar(Option(file.getParentFile)), pagePath)
       }
     }
   }
 
-  private def withRenderer[T](relativePath: Option[String], toc: Option[Toc])(block: (String => String) => T): T = {
+  private def withRenderer[T](relativePath: Option[String], toc: Option[Toc],
+                              headerIds: Boolean = true,
+                              singlePage: Boolean = false)(block: (String => String) => T): T = {
 
     // Link renderer
-    val link: (String => (String, String)) = _ match {
-      case link if link.contains("|") => {
+    val link: (String => (String, String)) = {
+      case link if link.contains("|") =>
         val parts = link.split('|')
-        (parts.tail.head, parts.head)
-      }
-      case image if image.endsWith(".png") => {
+        val href = if (singlePage) "#" + parts.tail.head else parts.tail.head
+        (href, parts.head)
+      case image if image.endsWith(".png") =>
         val link = image match {
           case full if full.startsWith("http://") => full
           case absolute if absolute.startsWith("/") => resources + absolute
           case relative => resources + "/" + relativePath.map(_ + "/").getOrElse("") + relative
         }
         (link, """<img src="""" + link + """"/>""")
-      }
-      case link => {
-        (link, link)
-      }
+      case link =>
+        if (singlePage) ("#" + link, link) else (link, link)
     }
 
     val links = new LinkRenderer {
@@ -155,9 +181,48 @@ class PlayDoc(markdownRepository: FileRepository, codeRepository: FileRepository
         new TocSerializer(toc)
       )
     ){
-      override def visit(node: CodeNode) {
+      var headingsSeen = Map.empty[String, Int]
+      def headingToAnchor(heading: String) = {
+        val anchor = FastEncoder.encode(heading.replace(' ', '-'))
+        headingsSeen.get(anchor).fold {
+          headingsSeen += anchor -> 1
+          anchor
+        } { seen =>
+          headingsSeen += anchor -> (seen + 1)
+          anchor + seen
+        }
+      }
+
+      override def visit(node: CodeNode) = {
         super.visit(new CodeNode(node.getText.replace(PlayVersionVariableName, playVersion)))
       }
+
+      override def visit(node: HeaderNode) = {
+        // Put an id on header nodes
+        printer.print("<h")
+          .print(node.getLevel.toString)
+
+        if (headerIds) {
+          printer.print(" id=\"")
+
+          import scala.collection.JavaConverters._
+          def collectTextNodes(node: Node): Seq[String] = {
+            node.getChildren.asScala.collect {
+              case t: TextNode => Seq(t.getText)
+              case other => collectTextNodes(other)
+            }.flatten
+          }
+          val title = collectTextNodes(node).mkString
+
+          printer.print(headingToAnchor(title))
+            .print("\"")
+        }
+
+        printer.print(">")
+        visitChildren(node)
+        printer.print("</h").print(node.getLevel.toString).print(">")
+      }
+
     }
 
     def render(markdown: String): String = {
