@@ -258,22 +258,26 @@ class PlayDoc(markdownRepository: FileRepository, codeRepository: FileRepository
           case Array(source) => (source, code.getLabel)
         }
 
-        // The file is either relative to current page page or absolute, under the root
+        // The file is either relative to current page or absolute, under the root
         val sourceFile = if (source.startsWith("/")) {
           repo(source.drop(1))
         } else {
           repo(pagePath + source)
         }
 
-        val labelPattern = ("""\s*#\Q""" + label + """\E(\s|\z)""").r
-        val segment = sourceFile.flatMap { sourceCode =>
-          val notLabel = (s: String) => labelPattern.findFirstIn(s).isEmpty
-          val segment = sourceCode dropWhile (notLabel) drop (1) takeWhile (notLabel)
-          if (segment.isEmpty) {
-            None
-          } else {
-            Some(segment)
+        val segment = if (label.nonEmpty) {
+          val labelPattern = ("""\s*#\Q""" + label + """\E(\s|\z)""").r
+          sourceFile.flatMap { sourceCode =>
+            val notLabel = (s: String) => labelPattern.findFirstIn(s).isEmpty
+            val segment = sourceCode dropWhile (notLabel) drop (1) takeWhile (notLabel)
+            if (segment.isEmpty) {
+              None
+            } else {
+              Some(segment)
+            }
           }
+        } else {
+          sourceFile
         }
 
         segment.map { segment =>
