@@ -12,9 +12,9 @@ object PlayDocSpec extends Specification {
   val renderer = new PlayDoc(repo, repo, "resources", "2.4.0", PageIndex.parseFrom(repo, "Home", Some("example")), "Next")
 
   "code snippet handling" should {
-    def test(label: String, rendered: String) = {
-      oldRenderer.render("@[" + label + "](code/sample.txt)") must_==
-        """<pre class="prettyprint"><code class="language-txt">""" + rendered + """</code></pre>"""
+    def test(label: String, rendered: String, file: String = "code/sample.txt") = {
+      oldRenderer.render(s"@[$label]($file)") must_==
+        s"""<pre class="prettyprint"><code class="language-txt">$rendered</code></pre>"""
     }
 
     def failTest(label:String) = {
@@ -40,6 +40,8 @@ object PlayDocSpec extends Specification {
     "allow replacing lines with limited text" in test("replacelimited", "Replaced")
     "allow inserting lines" in test("inserting", "Inserted\nSnippet")
     "allow inserting lines with limited text" in test("insertlimited", "Inserted")
+
+    "allow including a whole file" in test("", "This is the whole file", "code/whole.txt")
   }
 
   "page rendering" should {
