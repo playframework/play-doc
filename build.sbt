@@ -26,6 +26,8 @@ publishTo := {
 
 ReleaseKeys.crossBuild := true
 
+ReleaseKeys.tagName := (version in ThisBuild).value
+
 // When https://github.com/sbt/sbt-release/pull/49 is fixed, this can be updated to not be so hacky
 publish := PgpKeys.publishSigned.value
 
