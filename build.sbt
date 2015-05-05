@@ -6,14 +6,19 @@ lazy val root = (project in file(".")).enablePlugins(SbtTwirl)
 
 releaseSettings
 
-crossScalaVersions := Seq("2.10.4", "2.11.1")
+crossScalaVersions := Seq("2.10.5", "2.11.6")
 
-scalaVersion := "2.11.1"
+scalaVersion := "2.11.6"
+
+resolvers += "scalaz-bintray" at "https://dl.bintray.com/scalaz/releases"
 
 libraryDependencies ++= Seq(
-  "org.pegdown" % "pegdown" % "1.4.0",
+  "org.pegdown" % "pegdown" % "1.5.0",
   "commons-io" % "commons-io" % "2.4",
-  "org.specs2" %% "specs2" % "2.3.11" % "test"
+  "org.specs2" %% "specs2-core"  % "3.6" % "test",
+  "org.specs2" %% "specs2-junit" % "3.6" % "test",
+  "org.specs2" %% "specs2-mock"  % "3.6" % "test",
+  "org.specs2" %% "specs2-matcher-extra" % "3.6" % "test"
 )
 
 javacOptions ++= Seq("-source", "1.6", "-target", "1.6")
