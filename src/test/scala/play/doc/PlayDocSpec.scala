@@ -7,9 +7,15 @@ object PlayDocSpec extends Specification {
 
   def fileFromClasspath(name: String) = new File(Thread.currentThread.getContextClassLoader.getResource(name).toURI)
   val repo = new FilesystemRepository(fileFromClasspath("file-placeholder").getParentFile)
-  val oldRenderer = new PlayDoc(repo, repo, "resources", "2.1.3", None, "Next")
-
-  val renderer = new PlayDoc(repo, repo, "resources", "2.4.0", PageIndex.parseFrom(repo, "Home", Some("example")), "Next")
+  val config = PlayDocConfig("resources", Map("PLAY_VERSION" -> "2.4.0"),
+    Map(
+      "akka" -> "http://doc.akka.io/docs/akka/2.3.11",
+      "akkasapi" -> "http://doc.akka.io/api/akka/2.3.11",
+      "akkajapi" -> "http://doc.akka.io/japi/akka/2.3.11"
+    ), Some("Next")
+  )
+  val oldRenderer = new PlayDoc(repo, repo, None, config)
+  val renderer = new PlayDoc(repo, repo, PageIndex.parseFrom(repo, "Home", Some("example")), config)
 
   "code snippet handling" should {
     def test(label: String, rendered: String, file: String = "code/sample.txt") = {
@@ -80,7 +86,7 @@ object PlayDocSpec extends Specification {
 
   "play version variables" should {
     "be substituted with the Play version" in {
-      oldRenderer.render("The current Play version is %PLAY_VERSION%") must_== "<p>The current Play version is 2.1.3</p>"
+      oldRenderer.render("The current Play version is %PLAY_VERSION%") must_== "<p>The current Play version is 2.4.0</p>"
     }
     "work in verbatim blocks" in {
       oldRenderer.render(
@@ -89,10 +95,10 @@ object PlayDocSpec extends Specification {
           |
           |     addSbtPlugin("com.typesafe.play" % "sbt-plugin" % "%PLAY_VERSION%")
           |
-        """.stripMargin) must contain("% &quot;2.1.3&quot;)")
+        """.stripMargin) must contain("% &quot;2.4.0&quot;)")
     }
     "work in code blocks" in {
-      oldRenderer.render("Play `%PLAY_VERSION%` is cool.") must_== "<p>Play <code>2.1.3</code> is cool.</p>"
+      oldRenderer.render("Play `%PLAY_VERSION%` is cool.") must_== "<p>Play <code>2.4.0</code> is cool.</p>"
     }
   }
 
@@ -105,6 +111,18 @@ object PlayDocSpec extends Specification {
           page.html must contain("<a href=\"SubFoo1\">Sub Section</a>")
           page.html must contain("<a href=\"SubFoo1\">Sub Foo Page 1</a>")
       }
+    }
+  }
+
+  "play link parameters" should {
+    "substitute" in {
+      renderer.render("[foo]({akka}/foo)") must contain("""href="http://doc.akka.io/docs/akka/2.3.11/foo"""")
+      renderer.render("[foo]({akkajapi}/foo)") must contain("""href="http://doc.akka.io/japi/akka/2.3.11/foo"""")
+      renderer.render("[foo]({akkasapi}/foo)") must contain("""href="http://doc.akka.io/api/akka/2.3.11/foo"""")
+    }
+    "not substitute" in {
+      renderer.render("[foo]({blah}/foo)") must contain("""href="{blah}/foo"""")
+      renderer.render("[foo](http://example.com/foo)") must contain("""href="http://example.com/foo"""")
     }
   }
 

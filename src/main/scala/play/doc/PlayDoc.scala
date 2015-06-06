@@ -19,23 +19,65 @@ import scala.collection.JavaConverters._
 case class RenderedPage(html: String, sidebarHtml: Option[String], path: String)
 
 /**
+ * Config for play doc.
+ *
+ * @param resourcesPath The path to render links to resources at.
+ * @param variables The variables.
+ * @param linkParameters The link parameters.
+ * @param nextText A translation of the word "Next" to render in next links.
+ */
+case class PlayDocConfig(resourcesPath: String, variables: Map[String, String], linkParameters: Map[String, String],
+                         nextText: Option[String])
+
+object PlayDoc {
+  val LinkParameterPattern = """\{([^\}]+)\}""".r
+
+  /**
+   * Substitute all the link parameters in the given URL pattern.
+   *
+   * @param url The url to substitute
+   * @param linkParameters The parameter map
+   * @return The URL
+   */
+  def substituteLinks(url: String, linkParameters: Map[String, String]) = {
+    LinkParameterPattern.replaceSomeIn(url, m => linkParameters.get(m.group(1)))
+  }
+
+  val VariablePattern = """%([^%]+)%""".r
+
+  /**
+   * Substitute all the variables in the given text.
+   *
+   * @param text The text to substitute
+   * @param variables The variables
+   * @return The text
+   */
+  def substituteVariables(text: String, variables: Map[String, String]) = {
+    VariablePattern.replaceSomeIn(text, m => variables.get(m.group(1)))
+  }
+
+}
+
+/**
  * Play documentation support
  *
  * @param markdownRepository Repository for finding markdown files
  * @param codeRepository Repository for finding code samples
- * @param resources The resources path
- * @param playVersion The version of Play we are rendering docs for.
  * @param pageIndex An optional page index. If None, will use the old approach of searching up the
  *                  heirarchy for sidebar pages, otherwise will use the page index to render the sidebar.
- * @param nextText A translation of the word "Next" to render in next links
+ * @param config The configuration.
  */
-class PlayDoc(markdownRepository: FileRepository, codeRepository: FileRepository, resources: String,
-              playVersion: String, val pageIndex: Option[PageIndex], nextText: String) {
+class PlayDoc(markdownRepository: FileRepository, codeRepository: FileRepository,
+              val pageIndex: Option[PageIndex], config: PlayDocConfig) {
 
-  def this(markdownRepository: FileRepository, codeRepository: FileRepository, resources: String,
-    playVersion: String) = this(markdownRepository, codeRepository, resources, playVersion, None, "")
+  import PlayDoc._
 
-  val PlayVersionVariableName = "%PLAY_VERSION%"
+  val variables = config.variables.map {
+    case (key, value) => key -> FastEncoder.encode(value)
+  }
+  val linkParameters = config.linkParameters.map {
+    case (key, value) => key -> FastEncoder.encode(value)
+  }
 
   /**
    * Render some markdown.
@@ -61,8 +103,8 @@ class PlayDoc(markdownRepository: FileRepository, codeRepository: FileRepository
           val renderedPage = markdownRepository.loadFile(pagePath)(IOUtils.toString).map(renderer)
 
           renderedPage.map { html =>
-            val withNext = page.next.fold(html) { next =>
-              html + nextLink(next, nextText).body
+            val withNext = page.next.zip(config.nextText).headOption.fold(html) {
+              case (next, nextText) => html + nextLink(next, nextText).body
             }
             RenderedPage(withNext, Some(sidebar(page.nav).body), pagePath)
           }
@@ -149,8 +191,8 @@ class PlayDoc(markdownRepository: FileRepository, codeRepository: FileRepository
       case image if image.endsWith(".png") =>
         val link = image match {
           case full if full.startsWith("http://") => full
-          case absolute if absolute.startsWith("/") => resources + absolute
-          case relative => resources + "/" + relativePath.map(_ + "/").getOrElse("") + relative
+          case absolute if absolute.startsWith("/") => config.resourcesPath + absolute
+          case relative => config.resourcesPath + "/" + relativePath.map(_ + "/").getOrElse("") + relative
         }
         (link, """<img src="""" + link + """"/>""")
       case link =>
@@ -162,14 +204,26 @@ class PlayDoc(markdownRepository: FileRepository, codeRepository: FileRepository
         val (href, text) = link(node.getText)
         new LinkRenderer.Rendering(href, text)
       }
+      override def render(node: ExpLinkNode, text: String) = {
+        val newNode = new ExpLinkNode(node.title, substituteLinks(node.url, linkParameters), node.getChildren.get(0))
+        super.render(newNode, text)
+      }
+      override def render(node: AutoLinkNode) = {
+        val url = substituteLinks(node.getText, linkParameters)
+        new LinkRenderer.Rendering(url, url)
+      }
     }
 
+    val plugins = config.variables.foldLeft(
+      PegDownPlugins.builder()
+        .withPlugin(classOf[CodeReferenceParser])
+        .withPlugin(classOf[TocParser])
+    ) { (ps, variable) =>
+      ps.withPlugin(classOf[VariableParser], variable._1)
+    }.build()
+
     // Markdown parser
-    val processor = new PegDownProcessor(Extensions.ALL, PegDownPlugins.builder()
-      .withPlugin(classOf[CodeReferenceParser])
-      .withPlugin(classOf[VariableParser], PlayVersionVariableName)
-      .withPlugin(classOf[TocParser])
-      .build)
+    val processor = new PegDownProcessor(Extensions.ALL, plugins)
 
     // ToHtmlSerializer's are stateful and so not reusable
     def htmlSerializer = new ToHtmlSerializer(links,
@@ -177,7 +231,7 @@ class PlayDoc(markdownRepository: FileRepository, codeRepository: FileRepository
         new VerbatimSerializerWrapper(PrettifyVerbatimSerializer)),
       Arrays.asList[ToHtmlSerializerPlugin](
         new CodeReferenceSerializer(relativePath.map(_ + "/").getOrElse("")),
-        new VariableSerializer(Map(PlayVersionVariableName -> FastEncoder.encode(playVersion))),
+        new VariableSerializer(variables),
         new TocSerializer(toc)
       )
     ){
@@ -194,7 +248,8 @@ class PlayDoc(markdownRepository: FileRepository, codeRepository: FileRepository
       }
 
       override def visit(node: CodeNode) = {
-        super.visit(new CodeNode(node.getText.replace(PlayVersionVariableName, playVersion)))
+        val text = substituteVariables(node.getText, variables)
+        super.visit(new CodeNode(text))
       }
 
       override def visit(node: HeaderNode) = {
@@ -349,7 +404,7 @@ class PlayDoc(markdownRepository: FileRepository, codeRepository: FileRepository
 
   private class VerbatimSerializerWrapper(wrapped: VerbatimSerializer) extends VerbatimSerializer {
     def serialize(node: VerbatimNode, printer: Printer) {
-      val text = node.getText.replace(PlayVersionVariableName, playVersion)
+      val text = substituteVariables(node.getText, variables)
       wrapped.serialize(new VerbatimNode(text, node.getType), printer)
     }
   }

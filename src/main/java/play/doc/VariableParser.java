@@ -18,8 +18,10 @@ public class VariableParser extends Parser implements InlinePluginParser {
 
     public Rule VariableRule() {
         return NodeSequence(
+                "%",
                 name,
-                push(new VariableNode(name))
+                push(new VariableNode(name)),
+                "%"
         );
     }
 
