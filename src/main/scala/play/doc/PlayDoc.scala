@@ -213,12 +213,26 @@ class PlayDoc(markdownRepository: FileRepository, codeRepository: FileRepository
             }.flatten
           }
           val title = collectTextNodes(node).mkString
+          val anchorId = headingToAnchor(title)
 
-          printer.print(headingToAnchor(title))
+          printer.print(anchorId)
             .print("\"")
+
+          printer.print(">")
+
+          // Add section marker
+          printer.print("<a class=\"section-marker\" href=\"")
+            .print(s"#$anchorId")
+            .print("\"")
+            .print(">")
+            .print("§")
+            .print("</a>")
+        }
+        else {
+          printer.print(">")
         }
 
-        printer.print(">")
+
         visitChildren(node)
         printer.print("</h").print(node.getLevel.toString).print(">")
       }
