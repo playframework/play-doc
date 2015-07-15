@@ -1,3 +1,4 @@
+sudo: false
 jdk: openjdk6
 language: scala
 script: sbt +test
@@ -5,3 +6,12 @@ script: sbt +test
 branches:
   only:
     - master
+
+cache:
+  directories:
+    - $HOME/.ivy2/cache
+before_cache:
+  # Delete the cached artifacts
+  - rm -rf $HOME/.ivy2/cache/com.typesafe.play/play-doc*
+  # Delete all ivydata files
+  - find $HOME/.ivy2/cache -name "ivydata-*.properties" | xargs rm

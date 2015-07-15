@@ -9,5 +9,6 @@ libraryDependencies ++= Seq(
 
 // Important to use 1.6 target, since ASM doesn't support 1.8 byte code
 javacOptions in compile := javacOptions.value ++ Seq("-source", "1.6", "-target", "1.6")
+javacOptions in doc := javacOptions.value ++ Seq("-source", "1.6")
 
 playBuildRepoName in ThisBuild := "play-doc"
