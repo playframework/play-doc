@@ -1,6 +1,6 @@
 package play.doc
 
-import java.io.File
+import java.io.{InputStream, File}
 import java.util.{Collections, Arrays}
 import org.pegdown._
 import org.pegdown.plugins.{ToHtmlSerializerPlugin, PegDownPlugins}
@@ -58,7 +58,7 @@ class PlayDoc(markdownRepository: FileRepository, codeRepository: FileRepository
         withRenderer(Some(page.path).filter(_.nonEmpty), page.nav.headOption) { renderer =>
 
           val pagePath = page.fullPath + ".md"
-          val renderedPage = markdownRepository.loadFile(pagePath)(IOUtils.toString).map(renderer)
+          val renderedPage = markdownRepository.loadFile(pagePath)(inputStreamToString).map(renderer)
 
           renderedPage.map { html =>
             val withNext = page.next.fold(html) { next =>
@@ -90,7 +90,7 @@ class PlayDoc(markdownRepository: FileRepository, codeRepository: FileRepository
           idx.get(pageName).flatMap { page =>
             withRenderer(Some(page.path).filter(_.nonEmpty), page.nav.headOption, singlePage = singlePage) { renderer =>
               val pagePath = page.fullPath + ".md"
-              markdownRepository.loadFile(pagePath)(IOUtils.toString).map(renderer)
+              markdownRepository.loadFile(pagePath)(inputStreamToString).map(renderer)
             }
           }.map { pageName -> _ }
         }
@@ -117,7 +117,7 @@ class PlayDoc(markdownRepository: FileRepository, codeRepository: FileRepository
 
       def render(path: String, headerIds: Boolean = true): Option[String] = {
         withRenderer(relativePath, None, headerIds = headerIds) { renderer =>
-          markdownRepository.loadFile(path)(IOUtils.toString).map(renderer)
+          markdownRepository.loadFile(path)(inputStreamToString).map(renderer)
         }
       }
 
@@ -378,6 +378,8 @@ class PlayDoc(markdownRepository: FileRepository, codeRepository: FileRepository
       case _ => false
     }
   }
+
+  private val inputStreamToString: InputStream => String = IOUtils.toString(_, "utf-8")
 }
 
 private class Memoize[-T, +R](f: T => R) extends (T => R) {

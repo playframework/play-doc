@@ -107,7 +107,7 @@ object PageIndex {
 
   private def parseToc(repo: FileRepository, path: Option[String], page: String, title: String,
                        descend: Boolean = true): TocTree = {
-    repo.loadFile(path.fold("index.toc")(_ + "/index.toc"))(IOUtils.toString).fold[TocTree](
+    repo.loadFile(path.fold("index.toc")(_ + "/index.toc"))(IOUtils.toString(_, "utf-8")).fold[TocTree](
       TocPage(page, title)
     ) { content =>
       val lines = content.lines.toList.map(_.trim).filter(_.nonEmpty)

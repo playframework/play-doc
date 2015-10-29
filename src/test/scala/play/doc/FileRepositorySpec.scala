@@ -8,9 +8,9 @@ import java.util.jar.JarFile
 object FileRepositorySpec extends Specification {
 
   def fileFromClasspath(name: String) = new File(Thread.currentThread.getContextClassLoader.getResource(name).toURI)
-  def loadFileFromRepo(repo: FileRepository, path: String) = repo.loadFile(path)(IOUtils.toString)
+  def loadFileFromRepo(repo: FileRepository, path: String) = repo.loadFile(path)(IOUtils.toString(_, "utf-8"))
   def handleFileFromRepo(repo: FileRepository, path: String) = repo.handleFile(path) { handle =>
-    val result = (handle.name, handle.size, IOUtils.toString(handle.is))
+    val result = (handle.name, handle.size, IOUtils.toString(handle.is, "utf-8"))
     handle.close()
     result
   }
