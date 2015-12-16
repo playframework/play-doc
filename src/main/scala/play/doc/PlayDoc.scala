@@ -6,7 +6,6 @@ import org.pegdown._
 import org.pegdown.plugins.{ToHtmlSerializerPlugin, PegDownPlugins}
 import org.pegdown.ast._
 import org.apache.commons.io.IOUtils
-import play.doc.html.{toc, sidebar, nextLink}
 import scala.collection.JavaConverters._
 
 /**
@@ -27,13 +26,17 @@ case class RenderedPage(html: String, sidebarHtml: Option[String], path: String)
  * @param playVersion The version of Play we are rendering docs for.
  * @param pageIndex An optional page index. If None, will use the old approach of searching up the
  *                  heirarchy for sidebar pages, otherwise will use the page index to render the sidebar.
- * @param nextText A translation of the word "Next" to render in next links
+ * @param templates The templates to render snippets.
  */
 class PlayDoc(markdownRepository: FileRepository, codeRepository: FileRepository, resources: String,
-              playVersion: String, val pageIndex: Option[PageIndex], nextText: String) {
+              playVersion: String, val pageIndex: Option[PageIndex], templates: PlayDocTemplates) {
+
+  def this (markdownRepository: FileRepository, codeRepository: FileRepository, resources: String,
+    playVersion: String, pageIndex: Option[PageIndex], nextText: String) = this(markdownRepository, codeRepository,
+      resources, playVersion, pageIndex, new TranslatedPlayDocTemplates(nextText))
 
   def this(markdownRepository: FileRepository, codeRepository: FileRepository, resources: String,
-    playVersion: String) = this(markdownRepository, codeRepository, resources, playVersion, None, "")
+    playVersion: String) = this(markdownRepository, codeRepository, resources, playVersion, None, PlayDocTemplates)
 
   val PlayVersionVariableName = "%PLAY_VERSION%"
 
@@ -62,9 +65,9 @@ class PlayDoc(markdownRepository: FileRepository, codeRepository: FileRepository
 
           renderedPage.map { html =>
             val withNext = page.next.fold(html) { next =>
-              html + nextLink(next, nextText).body
+              html + templates.nextLink(next)
             }
-            RenderedPage(withNext, Some(sidebar(page.nav).body), pagePath)
+            RenderedPage(withNext, Some(templates.sidebar(page.nav)), pagePath)
           }
         }
       }
@@ -372,7 +375,7 @@ class PlayDoc(markdownRepository: FileRepository, codeRepository: FileRepository
     def visit(node: Node, visitor: Visitor, printer: Printer) = node match {
       case tocNode: TocNode =>
         maybeToc.fold(false) { t =>
-          printer.print(toc(t).body)
+          printer.print(templates.toc(t))
           true
         }
       case _ => false
