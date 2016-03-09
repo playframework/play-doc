@@ -27,16 +27,25 @@ case class RenderedPage(html: String, sidebarHtml: Option[String], path: String)
  * @param pageIndex An optional page index. If None, will use the old approach of searching up the
  *                  heirarchy for sidebar pages, otherwise will use the page index to render the sidebar.
  * @param templates The templates to render snippets.
+ * @param pageExtension The extension to add to rendered pages - used for rendering links.
  */
 class PlayDoc(markdownRepository: FileRepository, codeRepository: FileRepository, resources: String,
-              playVersion: String, val pageIndex: Option[PageIndex], templates: PlayDocTemplates) {
+              playVersion: String, val pageIndex: Option[PageIndex], templates: PlayDocTemplates,
+              pageExtension: Option[String]) {
 
-  def this (markdownRepository: FileRepository, codeRepository: FileRepository, resources: String,
-    playVersion: String, pageIndex: Option[PageIndex], nextText: String) = this(markdownRepository, codeRepository,
-      resources, playVersion, pageIndex, new TranslatedPlayDocTemplates(nextText))
-
+  @deprecated("Use the primary constructor", "1.3.0")
   def this(markdownRepository: FileRepository, codeRepository: FileRepository, resources: String,
-    playVersion: String) = this(markdownRepository, codeRepository, resources, playVersion, None, PlayDocTemplates)
+    playVersion: String, pageIndex: Option[PageIndex], nextText: String) = this(markdownRepository, codeRepository,
+      resources, playVersion, pageIndex, new TranslatedPlayDocTemplates(nextText), None)
+
+  @deprecated("Use the primary constructor", "1.3.0")
+  def this(markdownRepository: FileRepository, codeRepository: FileRepository, resources: String,
+    playVersion: String) = this(markdownRepository, codeRepository, resources, playVersion, None, PlayDocTemplates, None)
+
+  @deprecated("Use the primary constructor", "1.4.0")
+  def this(markdownRepository: FileRepository, codeRepository: FileRepository, resources: String,
+                   playVersion: String, pageIndex: Option[PageIndex], templates: PlayDocTemplates) =
+    this(markdownRepository, codeRepository, resources, playVersion, pageIndex, templates, None)
 
   val PlayVersionVariableName = "%PLAY_VERSION%"
 
@@ -139,6 +148,20 @@ class PlayDoc(markdownRepository: FileRepository, codeRepository: FileRepository
     }
   }
 
+  private def addExtension(href: String) = {
+    pageExtension match {
+      case Some(extension) =>
+        // Need to add before the fragment
+        if (href.contains("#")) {
+          val parts = href.split('#')
+          s"${parts.head}.$extension#${parts.tail.mkString("#")}"
+        } else {
+          s"$href.$extension"
+        }
+      case None => href
+    }
+  }
+
   private def withRenderer[T](relativePath: Option[String], toc: Option[Toc],
                               headerIds: Boolean = true,
                               singlePage: Boolean = false)(block: (String => String) => T): T = {
@@ -147,7 +170,7 @@ class PlayDoc(markdownRepository: FileRepository, codeRepository: FileRepository
     val link: (String => (String, String)) = {
       case link if link.contains("|") =>
         val parts = link.split('|')
-        val href = if (singlePage) "#" + parts.tail.head else parts.tail.head
+        val href = if (singlePage) "#" + parts.tail.head else addExtension(parts.tail.head)
         (href, parts.head)
       case image if image.endsWith(".png") =>
         val link = image match {
@@ -157,7 +180,7 @@ class PlayDoc(markdownRepository: FileRepository, codeRepository: FileRepository
         }
         (link, """<img src="""" + link + """"/>""")
       case link =>
-        if (singlePage) ("#" + link, link) else (link, link)
+        if (singlePage) ("#" + link, link) else (addExtension(link), link)
     }
 
     val links = new LinkRenderer {
