@@ -49,13 +49,18 @@ object PlayDocSpec extends Specification {
       "render the page and the sidebar" in {
         val result = oldRenderer.renderPage("Foo")
         result must beSome.like {
-          case RenderedPage(main, maybeSidebar, path) =>
+          case RenderedPage(main, maybeSidebar, path, maybeBreadcrumbs) =>
             main must contain("Some markdown")
             main must not contain "Sidebar"
             maybeSidebar must beSome.like {
               case sidebar =>
                 sidebar must contain("Sidebar")
                 sidebar must not contain "Some markdown"
+            }
+            maybeBreadcrumbs must beSome.like {
+              case breadcrumbs =>
+                breadcrumbs must contain("Breadcrumbs")
+                breadcrumbs must not contain "Some markdown"
             }
             path must_== "example/docs/Foo.md"
         }
@@ -66,11 +71,15 @@ object PlayDocSpec extends Specification {
       "render the page and sidebar" in {
         val result = renderer.renderPage("Foo")
         result must beSome.like {
-          case RenderedPage(main, maybeSidebar, path) =>
+          case RenderedPage(main, maybeSidebar, path, maybeBreadcrumbs) =>
             main must contain("Some markdown")
             maybeSidebar must beSome.like {
               case sidebar =>
                 sidebar must contain("<a href=\"Home\">Documentation Home</a>")
+            }
+            maybeBreadcrumbs must beSome.like {
+              case breadcrumbs =>
+                breadcrumbs must contain("<a itemprop=\"item\" href=\"Home\"><span itemprop=\"name\" title=\"Home\">Home</span></a>")
             }
             path must_== "example/docs/Foo.md"
         }

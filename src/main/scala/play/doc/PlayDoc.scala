@@ -14,8 +14,9 @@ import scala.collection.JavaConverters._
  * @param html The HTML for the page
  * @param sidebarHtml The HTML for the sidebar
  * @param path The path that the page was found at
+ * @param breadcrumbsHtml The HTML for the breadcrumbs.
  */
-case class RenderedPage(html: String, sidebarHtml: Option[String], path: String)
+case class RenderedPage(html: String, sidebarHtml: Option[String], path: String, breadcrumbsHtml: Option[String])
 
 /**
  * Play documentation support
@@ -76,7 +77,7 @@ class PlayDoc(markdownRepository: FileRepository, codeRepository: FileRepository
             val withNext = page.next.fold(html) { next =>
               html + templates.nextLink(next)
             }
-            RenderedPage(withNext, Some(templates.sidebar(page.nav)), pagePath)
+            RenderedPage(withNext, Some(templates.sidebar(page.nav)), pagePath, Some(templates.breadcrumbs(page.nav)))
           }
         }
       }
@@ -141,9 +142,16 @@ class PlayDoc(markdownRepository: FileRepository, codeRepository: FileRepository
           sidebar.orElse(findSideBar(Option(parent.getParentFile)))
       }
 
+      def findBreadcrumbs(file: Option[File]): Option[String] = file match {
+        case None => None
+        case Some(parent) =>
+          val breadcrumbs = render(parent.getPath + "/_Breadcrumbs.md", headerIds = false)
+          breadcrumbs.orElse(findBreadcrumbs(Option(parent.getParentFile)))
+      }
+
       // Render both the markdown and the sidebar
       render(pagePath).map { markdown =>
-        RenderedPage(markdown, findSideBar(Option(file.getParentFile)), pagePath)
+        RenderedPage(markdown, findSideBar(Option(file.getParentFile)), pagePath, findBreadcrumbs(Option(file.getParentFile)))
       }
     }
   }

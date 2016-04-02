@@ -1,0 +1,24 @@
+@*
+* Renders breadcrumbs, given a list of table of contents sections.
+*
+* Does not render the last element, as that's the page you're on.
+*
+* This also effects on Google searches because the structured data
+* is seen as significant:
+*
+* https://developers.google.com/structured-data/breadcrumbs
+*@
+@(hierarchy: List[play.doc.Toc])
+
+<ol id="breadcrumb" itemscope itemtype="http://schema.org/BreadcrumbList">
+@for((header, index) <- hierarchy.reverse.zipWithIndex) {
+  @defining(index + 1) { count =>
+    @if((index <= hierarchy.size))  {
+      <li itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
+        <a itemprop="item" href="@header.page"><span itemprop="name" title="@{header.title}">@header.title</span></a>
+        <meta itemprop="position" content="@{count}"/>
+      </li>
+    }
+  }
+}
+</ol>
