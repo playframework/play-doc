@@ -16,10 +16,17 @@ trait PlayDocTemplates {
   /**
     * Render the sidebar.
     *
-    * @param heirarchy The heirarchy to render in the sidebar.
+    * @param hierarchy The hierarchy to render in the sidebar.
     * @return The sidebar.
     */
-  def sidebar(heirarchy: List[Toc]): String
+  def sidebar(hierarchy: List[Toc]): String
+
+  /**
+   *
+   * @param hierarchy The hierarchy to render in the breadcrumbs.
+   * @return
+   */
+  def breadcrumbs(hierarchy: List[Toc]): String
 
   /**
     * Render a table of contents.
@@ -33,6 +40,7 @@ trait PlayDocTemplates {
 class TranslatedPlayDocTemplates(nextText: String) extends PlayDocTemplates {
   override def nextLink(toc: TocTree): String = play.doc.html.nextLink(toc, nextText).body
   override def sidebar(heirarchy: List[Toc]): String = play.doc.html.sidebar(heirarchy).body
+  override def breadcrumbs(hierarchy: List[Toc]): String = play.doc.html.breadcrumbs(hierarchy).body
   override def toc(toc: Toc): String = play.doc.html.toc(toc).body
 }
 
