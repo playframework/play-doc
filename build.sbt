@@ -2,7 +2,7 @@ lazy val `play-doc` = (project in file("."))
   .enablePlugins(PlayLibrary, SbtTwirl, PlayReleaseBase)
 
 libraryDependencies ++= Seq(
-  "org.pegdown" % "pegdown" % "1.4.0",
+  "org.pegdown" % "pegdown" % "1.6.0",
   "commons-io" % "commons-io" % "2.4",
   "org.specs2" %% "specs2" % "2.3.11" % "test"
 )
