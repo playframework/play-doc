@@ -22,7 +22,7 @@ object PageIndexSpec extends Specification {
         index.get("Home") must beSome.like {
           case page =>
             page.page must_== "Home"
-            page.path must_== "example"
+            page.path must_== Some("example")
             page.title must_== "Documentation Home"
         }
       }
@@ -30,7 +30,7 @@ object PageIndexSpec extends Specification {
         index.get("Foo") must beSome.like {
           case page =>
             page.page must_== "Foo"
-            page.path must_== "example/docs"
+            page.path must_== Some("example/docs")
             page.title must_== "Foo Page"
         }
       }
@@ -38,13 +38,13 @@ object PageIndexSpec extends Specification {
         index.get("SubFoo1") must beSome.like {
           case page =>
             page.page must_== "SubFoo1"
-            page.path must_== "example/docs/sub"
+            page.path must_== Some("example/docs/sub")
             page.title must_== "Sub Foo Page 1"
         }
         index.get("SubFoo2") must beSome.like {
           case page =>
             page.page must_== "SubFoo2"
-            page.path must_== "example/docs/sub"
+            page.path must_== Some("example/docs/sub")
             page.title must_== "Sub Foo Page 2"
         }
       }

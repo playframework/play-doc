@@ -68,7 +68,7 @@ class PlayDoc(markdownRepository: FileRepository, codeRepository: FileRepository
       renderOldPage(pageName)
     } { index =>
       index.get(pageName).flatMap { page =>
-        withRenderer(Some(page.path).filter(_.nonEmpty), page.nav.headOption) { renderer =>
+        withRenderer(page.path, page.nav.headOption) { renderer =>
 
           val pagePath = page.fullPath + ".md"
           val renderedPage = markdownRepository.loadFile(pagePath)(inputStreamToString).map(renderer)
@@ -101,7 +101,7 @@ class PlayDoc(markdownRepository: FileRepository, codeRepository: FileRepository
         val pages = collectPagesInOrder(idx.toc)
         pages.flatMap { pageName =>
           idx.get(pageName).flatMap { page =>
-            withRenderer(Some(page.path).filter(_.nonEmpty), page.nav.headOption, singlePage = singlePage) { renderer =>
+            withRenderer(page.path, page.nav.headOption, singlePage = singlePage) { renderer =>
               val pagePath = page.fullPath + ".md"
               markdownRepository.loadFile(pagePath)(inputStreamToString).map(renderer)
             }

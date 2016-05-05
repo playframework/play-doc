@@ -47,7 +47,7 @@ class PageIndex(val toc: Toc, path: Option[String] = None) {
   
   private def indexPages(path: Option[String], nav: List[Toc], toc: Toc): List[Page] = {
     toc.nodes.flatMap {
-      case (_, TocPage(page, title)) => List(Page(page, path.getOrElse(""), title, nav))
+      case (_, TocPage(page, title)) => List(Page(page, path, title, nav))
       case (pathPart, tocPart: Toc) => indexPages(
         path.map(_ + "/" + pathPart).orElse(Some(pathPart)), tocPart :: nav, tocPart
       )
@@ -75,8 +75,8 @@ class PageIndex(val toc: Toc, path: Option[String] = None) {
  * @param nav The navigation associated with the page, this is a list of all the table of contents nodes, starting from
  *            the one that this page is in, all the way up the tree to the root node
  */
-case class Page(page: String, path: String, title: String, nav: List[Toc]) {
-  def fullPath = path + "/" + page
+case class Page(page: String, path: Option[String], title: String, nav: List[Toc]) {
+  def fullPath = path.fold(page)(_ + "/" + page)
 
   lazy val next: Option[TocTree] = findNext(page, nav)
 
