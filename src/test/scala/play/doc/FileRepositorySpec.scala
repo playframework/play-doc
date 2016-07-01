@@ -5,7 +5,7 @@ import java.io.File
 import org.apache.commons.io.IOUtils
 import java.util.jar.JarFile
 
-object FileRepositorySpec extends Specification {
+class FileRepositorySpec extends Specification {
 
   def fileFromClasspath(name: String) = new File(Thread.currentThread.getContextClassLoader.getResource(name).toURI)
   def loadFileFromRepo(repo: FileRepository, path: String) = repo.loadFile(path)(IOUtils.toString(_, "utf-8"))
