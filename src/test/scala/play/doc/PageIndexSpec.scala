@@ -4,7 +4,7 @@ import java.io.File
 
 import org.specs2.mutable.Specification
 
-object PageIndexSpec extends Specification {
+class PageIndexSpec extends Specification {
 
   def fileFromClasspath(name: String) = new File(Thread.currentThread.getContextClassLoader.getResource(name).toURI)
   val repo = new FilesystemRepository(fileFromClasspath("file-placeholder").getParentFile)

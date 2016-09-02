@@ -3,7 +3,7 @@ package play.doc
 import org.specs2.mutable._
 import java.io.File
 
-object PlayDocSpec extends Specification {
+class PlayDocSpec extends Specification {
 
   def fileFromClasspath(name: String) = new File(Thread.currentThread.getContextClassLoader.getResource(name).toURI)
   val repo = new FilesystemRepository(fileFromClasspath("file-placeholder").getParentFile)
