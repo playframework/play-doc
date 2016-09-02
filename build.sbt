@@ -1,6 +1,9 @@
 lazy val `play-doc` = (project in file("."))
   .enablePlugins(PlayLibrary, SbtTwirl, PlayReleaseBase)
 
+// we need crossVersionScala since interplay won't build PlayLibrary for 2.10.6
+crossScalaVersions := Seq("2.10.6", "2.11.8")
+
 libraryDependencies ++= Seq(
   "org.pegdown" % "pegdown" % "1.6.0",
   "commons-io" % "commons-io" % "2.5",
