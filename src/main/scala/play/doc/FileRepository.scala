@@ -96,6 +96,8 @@ class FilesystemRepository(base: File) extends FileRepository {
     }
     findFile(name)(base).map(_.getAbsolutePath.drop(base.getAbsolutePath.size + 1))
   }
+
+  override def toString(): String = s"FilesystemRepository($base)"
 }
 
 /**
@@ -139,4 +141,6 @@ class JarRepository(jarFile: JarFile, base: Option[String] = None) extends FileR
   }
 
   def close() = jarFile.close()
+
+  override def toString(): String = s"JarRepository(jarFile = ${jarFile}, base = ${base}"
 }
