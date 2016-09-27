@@ -146,6 +146,6 @@ class JarRepository(jarFile: JarFile, base: Option[String] = None) extends FileR
     def toString(jar: JarFile) = {
       s"JarFile(name = ${jar.getName})"
     }
-    s"JarRepository(jarFile = ${toString(jarFile)}, base = ${base}"
+    s"JarRepository(jarFile = ${toString(jarFile)}, base = ${base})"
   }
 }
