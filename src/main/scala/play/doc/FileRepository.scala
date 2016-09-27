@@ -142,5 +142,10 @@ class JarRepository(jarFile: JarFile, base: Option[String] = None) extends FileR
 
   def close() = jarFile.close()
 
-  override def toString(): String = s"JarRepository(jarFile = ${jarFile}, base = ${base}"
+  override def toString(): String = {
+    def toString(jar: JarFile) = {
+      s"JarFile(name = ${jar.getName})"
+    }
+    s"JarRepository(jarFile = ${toString(jarFile)}, base = ${base})"
+  }
 }
