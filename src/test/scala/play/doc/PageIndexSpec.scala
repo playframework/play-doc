@@ -55,16 +55,16 @@ class PageIndexSpec extends Specification {
     }
 
     "provide a table of contents" in {
-      index.toc.nodes.collectFirst { case ("Home", n) => n } must beSome(TocPage("Home", "Documentation Home"))
+      index.toc.nodes.collectFirst { case ("Home", n) => n } must beSome(TocPage("Home", "Documentation Home", None))
       index.toc.nodes.collectFirst { case ("docs", n) => n } must beSome.like {
         case toc: Toc =>
           toc.title must_== "Sub Documentation"
-          toc.nodes.collectFirst { case ("Foo", n) => n } must beSome(TocPage("Foo", "Foo Page"))
+          toc.nodes.collectFirst { case ("Foo", n) => n } must beSome(TocPage("Foo", "Foo Page", Some(List("SubFoo2"))))
           toc.nodes.collectFirst { case ("sub", n) => n } must beSome.like {
             case toc: Toc =>
               toc.title must_== "Sub Section"
-              toc.nodes.collectFirst { case ("SubFoo1", n) => n } must beSome(TocPage("SubFoo1", "Sub Foo Page 1"))
-              toc.nodes.collectFirst { case ("SubFoo2", n) => n } must beSome(TocPage("SubFoo2", "Sub Foo Page 2"))
+              toc.nodes.collectFirst { case ("SubFoo1", n) => n } must beSome(TocPage("SubFoo1", "Sub Foo Page 1", None))
+              toc.nodes.collectFirst { case ("SubFoo2", n) => n } must beSome(TocPage("SubFoo2", "Sub Foo Page 2", None))
           }
 
       }
@@ -85,7 +85,7 @@ class PageIndexSpec extends Specification {
         case toc: Toc => toc.name must_== "docs"
       }
       index.get("Foo").flatMap(_.next) must beSome.like {
-        case toc: Toc => toc.name must_== "sub"
+        case toc: TocPage => toc.page must_== "SubFoo2"
       }
       index.get("SubFoo1").flatMap(_.next) must beSome.like {
         case toc: TocPage => toc.page must_== "SubFoo2"

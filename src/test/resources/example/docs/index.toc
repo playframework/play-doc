@@ -1,2 +1,2 @@
-Foo:Foo Page
+Foo:Foo Page;next=SubFoo2
 sub:Sub Section

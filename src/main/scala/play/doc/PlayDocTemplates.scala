@@ -14,6 +14,14 @@ trait PlayDocTemplates {
   def nextLink(toc: TocTree): String
 
   /**
+   * Render a set of next links.
+   *
+   * @param toc The list of table of contents.
+   * @return The next links.
+   */
+  def nextLinks(toc: List[TocTree]) = toc.map(nextLink).mkString("")
+
+  /**
     * Render the sidebar.
     *
     * @param hierarchy The hierarchy to render in the sidebar.

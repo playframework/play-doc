@@ -74,9 +74,7 @@ class PlayDoc(markdownRepository: FileRepository, codeRepository: FileRepository
           val renderedPage = markdownRepository.loadFile(pagePath)(inputStreamToString).map(renderer)
 
           renderedPage.map { html =>
-            val withNext = page.next.fold(html) { next =>
-              html + templates.nextLink(next)
-            }
+            val withNext = html + templates.nextLinks(page.nextLinks)
             RenderedPage(withNext, Some(templates.sidebar(page.nav)), pagePath, Some(templates.breadcrumbs(page.nav)))
           }
         }
@@ -94,7 +92,7 @@ class PlayDoc(markdownRepository: FileRepository, codeRepository: FileRepository
       case Some(idx) =>
         def collectPagesInOrder(node: TocTree): List[String] = {
           node match {
-            case TocPage(page, _) => List(page)
+            case TocPage(page, _, _) => List(page)
             case toc: Toc => toc.nodes.flatMap(n => collectPagesInOrder(n._2))
           }
         }
