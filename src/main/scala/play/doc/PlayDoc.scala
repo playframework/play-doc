@@ -197,7 +197,7 @@ class PlayDoc(markdownRepository: FileRepository, codeRepository: FileRepository
     }
 
     // Markdown parser
-    val processor = new PegDownProcessor(Extensions.ALL, PegDownPlugins.builder()
+    val processor = new PegDownProcessor(Extensions.ALL & ~Extensions.ANCHORLINKS, PegDownPlugins.builder()
       .withPlugin(classOf[CodeReferenceParser])
       .withPlugin(classOf[VariableParser], PlayVersionVariableName)
       .withPlugin(classOf[TocParser])
