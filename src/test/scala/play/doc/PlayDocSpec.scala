@@ -117,4 +117,11 @@ class PlayDocSpec extends Specification {
     }
   }
 
+  "header link rendering" should {
+    "render header links" in {
+      renderer.render("# Hello World") must_==
+        """<h1 id="Hello-World"><a class="section-marker" href="#Hello-World">§</a>Hello World</h1>"""
+    }
+  }
+
 }
