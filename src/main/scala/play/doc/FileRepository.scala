@@ -115,7 +115,7 @@ class JarRepository(jarFile: JarFile, base: Option[String] = None) extends FileR
   }
 
   def loadFile[A](path: String)(loader: InputStream => A) = {
-    getEntry(path).map { case (_, is) => loader(is) }
+    getEntry(path).filterNot(_._1.isDirectory).map { case (_, is) => loader(is) }
   }
 
   def handleFile[A](path: String)(handler: FileHandle => A) = {
