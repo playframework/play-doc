@@ -12,6 +12,7 @@ scala:
 - 2.12.4
 jdk:
 - oraclejdk8
+- oraclejdk9
 script: sbt ++$TRAVIS_SCALA_VERSION test
 branches:
   only:
@@ -25,3 +26,9 @@ before_cache:
 notifications:
   slack:
     secure: eSXNye/c+jVCFfB9E28AmXaOFiboQLkEINHXRfkcniVyQ1EVQGVoX2qXstkJmm9GRaUGuQkTi0mg8cRbXWff/3kn2H2O73Wot80E1H6YgkYm7lJ+ZYChxhiLn0j1YK8IPropdKGmtPtBJ+1yy7Radm6UUGDFVAGpIV9ibNAWXJM=
+matrix:
+  exclude:
+    - scala: 2.10.7
+      jdk: oraclejdk9
+    - scala: 2.11.12
+      jdk: oraclejdk9
