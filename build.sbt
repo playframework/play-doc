@@ -11,7 +11,7 @@ libraryDependencies ++= Seq(
 
 def specs2Deps(scalaVer: String) = CrossVersion.partialVersion(scalaVer) match {
   case Some((2, v)) if v >= 12 => Seq("org.specs2" %% "specs2-core" % "4.0.3" % Test)
-  case _ => Seq("org.specs2" %% "specs2-core" % "3.8.6" % Test)
+  case _ => Seq("org.specs2" %% "specs2-core" % "3.9.5" % Test)
 }
 
 // ASM version 5 will support Java 8 but not Java 9
