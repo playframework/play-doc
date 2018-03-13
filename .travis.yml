@@ -6,9 +6,13 @@ addons:
   apt:
     packages:
     - oracle-java8-installer
+scala:
+- 2.10.7
+- 2.11.12
+- 2.12.4
 jdk:
 - oraclejdk8
-script: sbt +test
+script: sbt ++$TRAVIS_SCALA_VERSION test
 branches:
   only:
   - master
