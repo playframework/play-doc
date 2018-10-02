@@ -13,7 +13,7 @@ scala:
 - 2.13.0-M3
 jdk:
 - oraclejdk8
-- oraclejdk9
+- oraclejdk11
 script: sbt ++$TRAVIS_SCALA_VERSION test
 branches:
   only:
@@ -30,6 +30,6 @@ notifications:
 matrix:
   exclude:
     - scala: 2.10.7
-      jdk: oraclejdk9
+      jdk: oraclejdk11
     - scala: 2.11.12
-      jdk: oraclejdk9
+      jdk: oraclejdk11

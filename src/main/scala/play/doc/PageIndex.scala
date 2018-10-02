@@ -133,7 +133,8 @@ object PageIndex {
     repo.loadFile(path.fold("index.toc")(_ + "/index.toc"))(IOUtils.toString(_, "utf-8")).fold[TocTree](
       TocPage(page, title, next)
     ) { content =>
-      val lines = content.lines.toList.map(_.trim).filter(_.nonEmpty)
+      // https://github.com/scala/bug/issues/11125#issuecomment-423375868
+      val lines = augmentString(content).lines.toList.map(_.trim).filter(_.nonEmpty)
       // Remaining lines are the entries of the contents
       val tocNodes = lines.map { entry =>
         val linkAndTitle :: params = entry.split(";").toList
