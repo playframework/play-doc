@@ -239,10 +239,10 @@ class PlayDoc(markdownRepository: FileRepository, codeRepository: FileRepository
 
           import scala.collection.JavaConverters._
           def collectTextNodes(node: Node): Seq[String] = {
-            node.getChildren.asScala.collect {
+            node.getChildren.asScala.toSeq.flatMap {
               case t: TextNode => Seq(t.getText)
               case other => collectTextNodes(other)
-            }.flatten
+            }
           }
           val title = collectTextNodes(node).mkString
           val anchorId = headingToAnchor(title)
@@ -394,7 +394,7 @@ class PlayDoc(markdownRepository: FileRepository, codeRepository: FileRepository
   }
 
   private class VerbatimSerializerWrapper(wrapped: VerbatimSerializer) extends VerbatimSerializer {
-    def serialize(node: VerbatimNode, printer: Printer) {
+  def serialize(node: VerbatimNode, printer: Printer): Unit = {
       val text = node.getText.replace(PlayVersionVariableName, playVersion)
       wrapped.serialize(new VerbatimNode(text, node.getType), printer)
     }
