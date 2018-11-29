@@ -11,7 +11,7 @@ object PrettifyVerbatimSerializer extends VerbatimSerializer {
 
   def serialize(node: VerbatimNode, printer: Printer) = {
 
-    def printAttribute(name: String, value: String) {
+    def printAttribute(name: String, value: String): Unit = {
       printer.print(' ').print(name).print('=').print('"').print(value).print('"')
     }
 
