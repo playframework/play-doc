@@ -5,7 +5,7 @@ lazy val `play-doc` = (project in file("."))
   .enablePlugins(PlayLibrary, SbtTwirl, PlayReleaseBase)
 
 // We need crossVersionScala since interplay won't build PlayLibrary for 2.10.
-crossScalaVersions := Seq(scala210, scala211, scala212, scala213)
+crossScalaVersions := Seq(scala210, "2.11.12", scala212, scala213)
 
 libraryDependencies ++= Seq(
   "org.pegdown" % "pegdown" % "1.6.0",
@@ -14,7 +14,7 @@ libraryDependencies ++= Seq(
 
 def specs2Deps(scalaVer: String): Seq[ModuleID] = scalaVer match {
   case ScalaVersions.scala210 => Seq("org.specs2" %% "specs2-core" % "3.9.5" % Test)
-  case _ => Seq("org.specs2" %% "specs2-core" % "4.3.5" % Test)
+  case _ => Seq("org.specs2" %% "specs2-core" % "4.5.1" % Test)
 }
 
 // ASM version 5 will support Java 8 but not Java 9

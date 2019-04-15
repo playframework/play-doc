@@ -13,7 +13,7 @@ env:
     - JABBA_HOME=$HOME/.jabba
   matrix:
     - TRAVIS_JDK=adopt@1.8.192-12
-    - TRAVIS_JDK=adopt@1.11.0-1
+    - TRAVIS_JDK=adopt@1.11.0-2
 
 matrix:
   fast_finish: true
@@ -21,17 +21,15 @@ matrix:
     # Java 11 is still not fully supported. It is good that we are already
     # testing play-ws using it to better discover possible problems but we
     # can allow failures here too.
-    - env: TRAVIS_JDK=adopt@1.11.0-1
+    - env: TRAVIS_JDK=adopt@1.11.0-2
 
 scala:
   - 2.10.7
-  - 2.12.7
+  - 2.12.8
   - 2.11.12
-  - 2.13.0-M5
+  - 2.13.0-RC1
 
-script:
-  - sbt ++$TRAVIS_SCALA_VERSION test
-  - sbt ++$TRAVIS_SCALA_VERSION publishLocal
+script: sbt ++$TRAVIS_SCALA_VERSION test publishLocal
 
 cache:
   directories:
