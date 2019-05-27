@@ -17,8 +17,29 @@ def specs2Deps(scalaVer: String): Seq[ModuleID] = scalaVer match {
   case _ => Seq("org.specs2" %% "specs2-core" % "4.5.1" % Test)
 }
 
-// ASM version 5 will support Java 8 but not Java 9
-javacOptions in compile := javacOptions.value ++ Seq("-source", "1.8", "-target", "1.8")
-javacOptions in doc := javacOptions.value ++ Seq("-source", "1.8")
+javacOptions ++= Seq(
+  "-source", "1.8",
+  "-target", "1.8",
+  "-Xlint:deprecation",
+  "-Xlint:unchecked",
+)
+
+scalacOptions ++= {
+  if (scalaVersion.value.equals(scala210)) {
+    Seq("-target:jvm-1.8")
+  } else {
+    Seq(
+      "-target:jvm-1.8",
+      "-encoding", "utf8",
+      "-deprecation",
+      "-feature",
+      "-unchecked",
+      "-Xlint",
+      "-Ywarn-unused:imports",
+      "-Xlint:nullary-unit",
+      "-Ywarn-dead-code",
+    )
+  }
+}
 
 playBuildRepoName in ThisBuild := "play-doc"
