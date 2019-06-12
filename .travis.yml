@@ -26,7 +26,7 @@ matrix:
 scala:
   - 2.10.7
   - 2.12.8
-  - 2.13.0-RC2
+  - 2.13.0
 
 script: sbt ++$TRAVIS_SCALA_VERSION test publishLocal
 
