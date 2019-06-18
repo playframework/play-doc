@@ -5,7 +5,7 @@ lazy val `play-doc` = (project in file("."))
   .enablePlugins(PlayLibrary, SbtTwirl, PlayReleaseBase)
 
 // We need crossVersionScala since interplay won't build PlayLibrary for 2.10.
-crossScalaVersions := Seq(scala210, scala212, scala213)
+crossScalaVersions := Seq(scala210, "2.11.12", scala212, scala213)
 
 libraryDependencies ++= Seq(
   "org.pegdown" % "pegdown" % "1.6.0",
