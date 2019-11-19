@@ -6,8 +6,7 @@ import org.apache.commons.io.IOUtils
 import java.util.jar.JarFile
 
 class FileRepositorySpec extends Specification {
-
-  def fileFromClasspath(name: String) = new File(Thread.currentThread.getContextClassLoader.getResource(name).toURI)
+  def fileFromClasspath(name: String)                      = new File(Thread.currentThread.getContextClassLoader.getResource(name).toURI)
   def loadFileFromRepo(repo: FileRepository, path: String) = repo.loadFile(path)(IOUtils.toString(_, "utf-8"))
   def handleFileFromRepo(repo: FileRepository, path: String) = repo.handleFile(path) { handle =>
     val result = (handle.name, handle.size, IOUtils.toString(handle.is, "utf-8"))
@@ -16,8 +15,8 @@ class FileRepositorySpec extends Specification {
   }
 
   "FilesystemRepository" should {
-    val repo = new FilesystemRepository(fileFromClasspath("file-placeholder").getParentFile)
-    def loadFile(path: String) = loadFileFromRepo(repo, path)
+    val repo                     = new FilesystemRepository(fileFromClasspath("file-placeholder").getParentFile)
+    def loadFile(path: String)   = loadFileFromRepo(repo, path)
     def handleFile(path: String) = handleFileFromRepo(repo, path)
     import repo.findFileWithName
 
@@ -64,8 +63,8 @@ class FileRepositorySpec extends Specification {
       }
     }
 
-    def loadFile(path: String) = withJarRepo(None)(loadFileFromRepo(_, path))
-    def handleFile(path: String) = withJarRepo(None)(handleFileFromRepo(_, path))
+    def loadFile(path: String)         = withJarRepo(None)(loadFileFromRepo(_, path))
+    def handleFile(path: String)       = withJarRepo(None)(handleFileFromRepo(_, path))
     def findFileWithName(name: String) = withJarRepo(None)(_.findFileWithName(name))
 
     "load a file" in {

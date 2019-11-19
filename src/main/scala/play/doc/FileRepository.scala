@@ -1,6 +1,8 @@
 package play.doc
 
-import java.io.{FileInputStream, File, InputStream}
+import java.io.FileInputStream
+import java.io.File
+import java.io.InputStream
 import java.util.jar.JarFile
 import java.util.zip.ZipEntry
 import scala.collection.JavaConverters._
@@ -59,7 +61,6 @@ trait FileRepository {
  * @param base The base dir of the file
  */
 class FilesystemRepository(base: File) extends FileRepository {
-
   private def cleanUp[A](loader: InputStream => A) = { is: InputStream =>
     try {
       loader(is)
@@ -82,7 +83,7 @@ class FilesystemRepository(base: File) extends FileRepository {
 
   def handleFile[A](path: String)(handler: FileHandle => A) = {
     getFile(path).map { file =>
-      val is = new FileInputStream(file)
+      val is     = new FileInputStream(file)
       val handle = FileHandle(file.getName, file.length, is, () => is.close())
       handler(handle)
     }
@@ -104,13 +105,12 @@ class FilesystemRepository(base: File) extends FileRepository {
  * Jar file implementation of the repository
  */
 class JarRepository(jarFile: JarFile, base: Option[String] = None) extends FileRepository {
-
   private val PathSeparator = "/"
-  private val basePrefix = base.map(_ + PathSeparator).getOrElse("")
+  private val basePrefix    = base.map(_ + PathSeparator).getOrElse("")
 
   def getEntry(path: String): Option[(ZipEntry, InputStream)] = {
-    Option(jarFile.getEntry(basePrefix + path)).flatMap {
-      entry => Option(jarFile.getInputStream(entry)).map(is => (entry, is))
+    Option(jarFile.getEntry(basePrefix + path)).flatMap { entry =>
+      Option(jarFile.getInputStream(entry)).map(is => (entry, is))
     }
   }
 
@@ -119,24 +119,29 @@ class JarRepository(jarFile: JarFile, base: Option[String] = None) extends FileR
   }
 
   def handleFile[A](path: String)(handler: FileHandle => A) = {
-    getEntry(path).map { case (entry, is) =>
-      val handle = FileHandle(entry.getName.split(PathSeparator).last, entry.getSize, is, () => is.close())
-      handler(handle)
+    getEntry(path).map {
+      case (entry, is) =>
+        val handle = FileHandle(entry.getName.split(PathSeparator).last, entry.getSize, is, () => is.close())
+        handler(handle)
     }
   }
 
   def findFileWithName(name: String) = {
-    def startsWith(full: String, part: String) = if (part.isEmpty) true else {
-      val comparePart = if (full.length == part.length) full else full.take(part.length)
-      comparePart.equalsIgnoreCase(part)
-    }
-    def endsWith(full: String, part: String) = if (part.isEmpty) true else {
-      val comparePart = if (full.length == part.length) full else full.takeRight(part.length)
-      comparePart.equalsIgnoreCase(part)
-    }
+    def startsWith(full: String, part: String) =
+      if (part.isEmpty) true
+      else {
+        val comparePart = if (full.length == part.length) full else full.take(part.length)
+        comparePart.equalsIgnoreCase(part)
+      }
+    def endsWith(full: String, part: String) =
+      if (part.isEmpty) true
+      else {
+        val comparePart = if (full.length == part.length) full else full.takeRight(part.length)
+        comparePart.equalsIgnoreCase(part)
+      }
 
     val slashName = PathSeparator + name
-    val found = jarFile.entries().asScala.map(_.getName).find(n => startsWith(n, basePrefix) && endsWith(n, slashName))
+    val found     = jarFile.entries().asScala.map(_.getName).find(n => startsWith(n, basePrefix) && endsWith(n, slashName))
     found.map(_.substring(basePrefix.length))
   }
 
