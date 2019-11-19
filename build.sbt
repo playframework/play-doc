@@ -14,7 +14,7 @@ libraryDependencies ++= Seq(
 
 def specs2Deps(scalaVer: String): Seq[ModuleID] = scalaVer match {
   case ScalaVersions.scala210 => Seq("org.specs2" %% "specs2-core" % "3.9.5" % Test)
-  case _ => Seq("org.specs2" %% "specs2-core" % "4.5.1" % Test)
+  case _ => Seq("org.specs2" %% "specs2-core" % "4.8.1" % Test)
 }
 
 javacOptions ++= Seq(
