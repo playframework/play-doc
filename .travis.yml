@@ -1,24 +1,11 @@
 language: scala
 
-before_install:
-  - curl -sL https://github.com/shyiko/jabba/raw/master/install.sh | bash && . ~/.jabba/jabba.sh
-
+before_install:  curl -sL https://github.com/shyiko/jabba/raw/master/install.sh | bash && . ~/.jabba/jabba.sh
 install: jabba install "adopt@~1.$TRAVIS_JDK.0-0" && jabba use "$_" && java -Xmx32m -version
 
 env:
-  global:
-    - JABBA_HOME=$HOME/.jabba
-  matrix:
-    - TRAVIS_JDK=8
-    - TRAVIS_JDK=11
-
-matrix:
-  fast_finish: true
-  allow_failures:
-    # Java 11 is still not fully supported. It is good that we are already
-    # testing play-ws using it to better discover possible problems but we
-    # can allow failures here too.
-    - env: TRAVIS_JDK=11
+  - TRAVIS_JDK=8
+  - TRAVIS_JDK=11
 
 scala:
   - 2.10.7
