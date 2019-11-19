@@ -4,12 +4,12 @@ import org.specs2.mutable._
 import java.io.File
 
 class PlayDocSpec extends Specification {
-
   def fileFromClasspath(name: String) = new File(Thread.currentThread.getContextClassLoader.getResource(name).toURI)
-  val repo = new FilesystemRepository(fileFromClasspath("file-placeholder").getParentFile)
-  val oldRenderer = new PlayDoc(repo, repo, "resources", "2.1.3", None, "Next")
+  val repo                            = new FilesystemRepository(fileFromClasspath("file-placeholder").getParentFile)
+  val oldRenderer                     = new PlayDoc(repo, repo, "resources", "2.1.3", None, "Next")
 
-  val renderer = new PlayDoc(repo, repo, "resources", "2.4.0", PageIndex.parseFrom(repo, "Home", Some("example")), "Next")
+  val renderer =
+    new PlayDoc(repo, repo, "resources", "2.4.0", PageIndex.parseFrom(repo, "Home", Some("example")), "Next")
 
   "code snippet handling" should {
     def test(label: String, rendered: String, file: String = "code/sample.txt") = {
@@ -17,16 +17,16 @@ class PlayDocSpec extends Specification {
         s"""<pre class="prettyprint"><code class="language-txt">$rendered</code></pre>"""
     }
 
-    def failTest(label:String) = {
+    def failTest(label: String) = {
       oldRenderer.render("@[" + label + "](code/sample.txt)") must_==
-              """Unable to find label """ + label + """ in source file """ + "code/sample.txt"
+        """Unable to find label """ + label + """ in source file """ + "code/sample.txt"
     }
 
     "allow extracting code snippets" in test("simple", "Snippet")
 
     "allow extracting code snippets using string that exists as substring elsewhere" in test("one", "One")
     "allow extracting code snippets using string as full string" in test("onetwothree", "One Two Three") // paired with previous test
-    "fail on substring code snippets using string as trailing" in failTest("three") // paired with previous test
+    "fail on substring code snippets using string as trailing" in failTest("three")                      // paired with previous test
 
     "fail on substring with no full string match" in failTest("leading")
     "should match on full string" in test("leading-following", "Leading Following") // paired with test for exception
@@ -79,7 +79,9 @@ class PlayDocSpec extends Specification {
             }
             maybeBreadcrumbs must beSome.like {
               case breadcrumbs =>
-                breadcrumbs must contain("<a itemprop=\"item\" href=\"Home\"><span itemprop=\"name\" title=\"Home\">Home</span></a>")
+                breadcrumbs must contain(
+                  "<a itemprop=\"item\" href=\"Home\"><span itemprop=\"name\" title=\"Home\">Home</span></a>"
+                )
             }
             path must_== "example/docs/Foo.md"
         }
@@ -92,12 +94,11 @@ class PlayDocSpec extends Specification {
       oldRenderer.render("The current Play version is %PLAY_VERSION%") must_== "<p>The current Play version is 2.1.3</p>"
     }
     "work in verbatim blocks" in {
-      oldRenderer.render(
-        """
-          | Here is some code:
-          |
-          |     addSbtPlugin("com.typesafe.play" % "sbt-plugin" % "%PLAY_VERSION%")
-          |
+      oldRenderer.render("""
+                           | Here is some code:
+                           |
+                           |     addSbtPlugin("com.typesafe.play" % "sbt-plugin" % "%PLAY_VERSION%")
+                           |
         """.stripMargin) must contain("% &quot;2.1.3&quot;)")
     }
     "work in code blocks" in {
@@ -123,5 +124,4 @@ class PlayDocSpec extends Specification {
         """<h1 id="Hello-World"><a class="section-marker" href="#Hello-World">§</a>Hello World</h1>"""
     }
   }
-
 }

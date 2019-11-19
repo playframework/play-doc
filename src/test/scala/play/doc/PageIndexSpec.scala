@@ -5,14 +5,12 @@ import java.io.File
 import org.specs2.mutable.Specification
 
 class PageIndexSpec extends Specification {
-
   def fileFromClasspath(name: String) = new File(Thread.currentThread.getContextClassLoader.getResource(name).toURI)
-  val repo = new FilesystemRepository(fileFromClasspath("file-placeholder").getParentFile)
-  def maybeIndex = PageIndex.parseFrom(repo, "Home", Some("example"))
-  def index = maybeIndex.getOrElse(new PageIndex(Toc("", "", Nil)))
+  val repo                            = new FilesystemRepository(fileFromClasspath("file-placeholder").getParentFile)
+  def maybeIndex                      = PageIndex.parseFrom(repo, "Home", Some("example"))
+  def index                           = maybeIndex.getOrElse(new PageIndex(Toc("", "", Nil)))
 
   "Page Index " should {
-
     "parse the index" in {
       maybeIndex must beSome(anInstanceOf[PageIndex])
     }
@@ -51,7 +49,6 @@ class PageIndexSpec extends Specification {
       "non existent" in {
         index.get("NotExists") must beNone
       }
-
     }
 
     "provide a table of contents" in {
@@ -63,10 +60,13 @@ class PageIndexSpec extends Specification {
           toc.nodes.collectFirst { case ("sub", n) => n } must beSome.like {
             case toc: Toc =>
               toc.title must_== "Sub Section"
-              toc.nodes.collectFirst { case ("SubFoo1", n) => n } must beSome(TocPage("SubFoo1", "Sub Foo Page 1", None))
-              toc.nodes.collectFirst { case ("SubFoo2", n) => n } must beSome(TocPage("SubFoo2", "Sub Foo Page 2", None))
+              toc.nodes.collectFirst { case ("SubFoo1", n) => n } must beSome(
+                TocPage("SubFoo1", "Sub Foo Page 1", None)
+              )
+              toc.nodes.collectFirst { case ("SubFoo2", n) => n } must beSome(
+                TocPage("SubFoo2", "Sub Foo Page 2", None)
+              )
           }
-
       }
     }
 
@@ -93,5 +93,4 @@ class PageIndexSpec extends Specification {
       index.get("SubFoo2").flatMap(_.next) must beNone
     }
   }
-
 }

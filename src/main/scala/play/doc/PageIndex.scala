@@ -19,20 +19,20 @@ sealed trait TocTree {
 
 /**
  * A table of contents
- * 
+ *
  * @param title The title of this table of contents
  * @param nodes The nodes in the table of contents
  * @param descend Whether a table of contents should descend into this table of contents
  */
 case class Toc(name: String, title: String, nodes: List[(String, TocTree)], descend: Boolean = true) extends TocTree {
   require(nodes.nonEmpty)
-  
-  def page = nodes.head._2.page  
+
+  def page = nodes.head._2.page
 }
 
 /**
  * A page (leaf node) pointed to by the table of contents
- * 
+ *
  * @param page The page
  * @param title The title of the page
  * @param next Explicitly provided next links. If None, then the index structure are used to generate the next links,
@@ -44,12 +44,10 @@ case class TocPage(page: String, title: String, next: Option[List[String]]) exte
 
 /**
  * The page index
- * 
+ *
  * @param toc The table of contents
  */
 class PageIndex(val toc: Toc, path: Option[String] = None) {
-
-
   private val byPage: Map[String, Page] = {
     // First, create a by name index
     def indexByName(node: TocTree): List[(String, TocTree)] = node match {
@@ -60,26 +58,28 @@ class PageIndex(val toc: Toc, path: Option[String] = None) {
     }
     val byNameMap = indexByName(toc).toMap
 
-
     def indexPages(path: Option[String], nav: List[Toc], toc: Toc): List[Page] = {
       toc.nodes.flatMap {
         case (_, TocPage(page, title, explicitNext)) =>
-          val nextLinks = explicitNext.map { links =>
-            links.collect(Function.unlift(byNameMap.get))
-          }.getOrElse {
-            findNext(page, nav).toList
-          }
+          val nextLinks = explicitNext
+            .map { links =>
+              links.collect(Function.unlift(byNameMap.get))
+            }
+            .getOrElse {
+              findNext(page, nav).toList
+            }
           List(Page(page, path, title, nav, nextLinks))
-        case (pathPart, tocPart: Toc) => indexPages(
-          path.map(_ + "/" + pathPart).orElse(Some(pathPart)), tocPart :: nav, tocPart
-        )
+        case (pathPart, tocPart: Toc) =>
+          indexPages(
+            path.map(_ + "/" + pathPart).orElse(Some(pathPart)),
+            tocPart :: nav,
+            tocPart
+          )
       }
     }
 
     indexPages(path, List(toc), toc).map(p => p.page -> p).toMap
   }
-
-
 
   private def findNext(name: String, nav: List[Toc]): Option[TocTree] = {
     nav match {
@@ -100,7 +100,6 @@ class PageIndex(val toc: Toc, path: Option[String] = None) {
    * Get the page for the given page name
    */
   def get(page: String): Option[Page] = byPage.get(page)
-  
 }
 
 /**
@@ -120,52 +119,57 @@ case class Page(page: String, path: Option[String], title: String, nav: List[Toc
 }
 
 object PageIndex {
-
   def parseFrom(repo: FileRepository, home: String, path: Option[String] = None): Option[PageIndex] = {
     parseToc(repo, path, "", home) match {
       case toc: Toc => Some(new PageIndex(toc, path))
-      case _ => None
+      case _        => None
     }
   }
 
-  private def parseToc(repo: FileRepository, path: Option[String], page: String, title: String,
-                       descend: Boolean = true, next: Option[List[String]] = None): TocTree = {
-    repo.loadFile(path.fold("index.toc")(_ + "/index.toc"))(IOUtils.toString(_, "utf-8")).fold[TocTree](
-      TocPage(page, title, next)
-    ) { content =>
-      // https://github.com/scala/bug/issues/11125#issuecomment-423375868
-      val lines = augmentString(content).lines.toList.map(_.trim).filter(_.nonEmpty)
-      // Remaining lines are the entries of the contents
-      val tocNodes = lines.map { entry =>
-        val linkAndTitle :: params = entry.split(";").toList
-        val (link, title) = {
-          linkAndTitle.split(":", 2) match {
-            case Array(p) => p -> p
-            case Array(p, t) => p -> t
+  private def parseToc(
+      repo: FileRepository,
+      path: Option[String],
+      page: String,
+      title: String,
+      descend: Boolean = true,
+      next: Option[List[String]] = None
+  ): TocTree = {
+    repo
+      .loadFile(path.fold("index.toc")(_ + "/index.toc"))(IOUtils.toString(_, "utf-8"))
+      .fold[TocTree](
+        TocPage(page, title, next)
+      ) { content =>
+        // https://github.com/scala/bug/issues/11125#issuecomment-423375868
+        val lines = augmentString(content).lines.toList.map(_.trim).filter(_.nonEmpty)
+        // Remaining lines are the entries of the contents
+        val tocNodes = lines.map { entry =>
+          val linkAndTitle :: params = entry.split(";").toList
+          val (link, title) = {
+            linkAndTitle.split(":", 2) match {
+              case Array(p)    => p -> p
+              case Array(p, t) => p -> t
+            }
           }
-        }
-        val parsedParams = params.map { param =>
-          param.split("=", 2) match {
-            case Array(k) => k -> k
-            case Array(k, v) => k -> v
+          val parsedParams = params.map { param =>
+            param.split("=", 2) match {
+              case Array(k)    => k -> k
+              case Array(k, v) => k -> v
+            }
+          }.toMap
+
+          val next = parsedParams.get("next").map { n =>
+            n.split(",").toList
           }
-        }.toMap
 
-        val next = parsedParams.get("next").map { n =>
-          n.split(",").toList
+          val (relPath, descend) = if (link.startsWith("!")) {
+            link.drop(1) -> false
+          } else {
+            link -> true
+          }
+
+          relPath -> parseToc(repo, path.map(_ + "/" + relPath).orElse(Some(relPath)), relPath, title, descend, next)
         }
-
-        val (relPath, descend) = if (link.startsWith("!")) {
-          link.drop(1) -> false
-        } else {
-          link -> true
-        }
-
-        relPath -> parseToc(repo, path.map(_ + "/" + relPath).orElse(Some(relPath)), relPath, title, descend, next)
-
+        Toc(page, title, tocNodes, descend)
       }
-      Toc(page, title, tocNodes, descend)
-    }
   }
-
 }
