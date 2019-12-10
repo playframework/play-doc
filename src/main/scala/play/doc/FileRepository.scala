@@ -21,6 +21,7 @@ case class FileHandle(name: String, size: Long, is: InputStream, close: () => Un
  * Repository for loading files
  */
 trait FileRepository {
+
   /**
    * Load a file using the given loader. If the file is found then the
    * file will be opened and loader will be called with its content. The

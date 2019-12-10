@@ -373,14 +373,13 @@ class PlayDoc(
               .map { line =>
                 if (!line.exists(_ != ' ')) None else Some(line.indexWhere(_ != ' '))
               }
-              .reduce(
-                (i1, i2) =>
-                  (i1, i2) match {
-                    case (None, None)         => None
-                    case (i, None)            => i
-                    case (None, i)            => i
-                    case (Some(i1), Some(i2)) => Some(math.min(i1, i2))
-                  }
+              .reduce((i1, i2) =>
+                (i1, i2) match {
+                  case (None, None)         => None
+                  case (i, None)            => i
+                  case (None, i)            => i
+                  case (Some(i1), Some(i2)) => Some(math.min(i1, i2))
+                }
               )
               .getOrElse(0)
 

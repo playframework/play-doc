@@ -4,6 +4,7 @@ package play.doc
  * Templates for rendering Play documentation snippets.
  */
 trait PlayDocTemplates {
+
   /**
    * Render the next link.
    *
