@@ -6,6 +6,7 @@ import org.apache.commons.io.IOUtils
  * A table of contents node
  */
 sealed trait TocTree {
+
   /**
    * The page that this node should point to
    */
