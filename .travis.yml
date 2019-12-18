@@ -3,6 +3,10 @@ language: scala
 before_install:  curl -sL https://github.com/shyiko/jabba/raw/master/install.sh | bash && . ~/.jabba/jabba.sh
 install: jabba install "adopt@~1.$TRAVIS_JDK.0-0" && jabba use "$_" && java -Xmx32m -version
 
+
+git:
+  depth: false # Avoid sbt-dynver not seeing the tag
+
 env:
   - TRAVIS_JDK=8
   - TRAVIS_JDK=11
