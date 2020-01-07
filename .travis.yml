@@ -12,7 +12,6 @@ env:
   - TRAVIS_JDK=11
 
 scala:
-  - 2.10.7
   - 2.12.10
   - 2.13.1
 
@@ -23,6 +22,7 @@ cache:
     - "$HOME/.ivy2/cache"
     - "$HOME/.sbt/boot/"
     - "$HOME/.jabba/jdk"
+    - "$HOME/.coursier/cache"
 
 before_cache:
   - rm -rf $HOME/.ivy2/cache/com.typesafe.play/play-doc*
