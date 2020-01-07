@@ -22,6 +22,7 @@ cache:
     - "$HOME/.ivy2/cache"
     - "$HOME/.sbt/boot/"
     - "$HOME/.jabba/jdk"
+    - "$HOME/.coursier/cache"
 
 before_cache:
   - rm -rf $HOME/.ivy2/cache/com.typesafe.play/play-doc*
