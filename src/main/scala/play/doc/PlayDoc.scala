@@ -330,9 +330,7 @@ class PlayDoc(
     // Most files will be accessed multiple times from the same markdown file, no point in opening them many times
     // so memoize them.  This cache is only per file rendered, so does not need to be thread safe.
     val repo = Memoize[String, Option[Seq[String]]] { path =>
-      codeRepository.loadFile(path) { is =>
-        IOUtils.readLines(is).asScala.toSeq
-      }
+      codeRepository.loadFile(path) { is => IOUtils.readLines(is).asScala.toSeq }
     }
 
     def visit(node: Node, visitor: Visitor, printer: Printer) = node match {
@@ -370,9 +368,7 @@ class PlayDoc(
             // Calculate the indent, which is equal to the smallest indent of any line, excluding lines that only consist
             // of space characters
             val indent = segment
-              .map { line =>
-                if (!line.exists(_ != ' ')) None else Some(line.indexWhere(_ != ' '))
-              }
+              .map { line => if (!line.exists(_ != ' ')) None else Some(line.indexWhere(_ != ' ')) }
               .reduce((i1, i2) =>
                 (i1, i2) match {
                   case (None, None)         => None
@@ -394,7 +390,7 @@ class PlayDoc(
                 this
               }
             }
-            val compiledSegment = (segment
+            val compiledSegment = segment
               .foldLeft(State()) { (state, line) =>
                 state.skip match {
                   case Some(n) if (n > 1) => state.copy(skip = Some(n - 1))
@@ -408,7 +404,7 @@ class PlayDoc(
                       case _                 => state.dropIndentAndAppendLine(line)
                     }
                 }
-              })
+              }
               .buffer /* Drop last newline */
               .dropRight(1)
               .toString()

@@ -26,9 +26,7 @@ object PrettifyVerbatimSerializer extends VerbatimSerializer {
 
     val text = node.getText
     // print HTML breaks for all initial newlines
-    text.takeWhile(_ == '\n').foreach { _ =>
-      printer.print("<br/>")
-    }
+    text.takeWhile(_ == '\n').foreach { _ => printer.print("<br/>") }
 
     printer.printEncoded(text.dropWhile(_ == '\n'))
     printer.print("</code></pre>");

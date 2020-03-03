@@ -63,9 +63,7 @@ class PageIndex(val toc: Toc, path: Option[String] = None) {
       toc.nodes.flatMap {
         case (_, TocPage(page, title, explicitNext)) =>
           val nextLinks = explicitNext
-            .map { links =>
-              links.collect(Function.unlift(byNameMap.get))
-            }
+            .map { links => links.collect(Function.unlift(byNameMap.get)) }
             .getOrElse {
               findNext(page, nav).toList
             }
@@ -158,9 +156,7 @@ object PageIndex {
             }
           }.toMap
 
-          val next = parsedParams.get("next").map { n =>
-            n.split(",").toList
-          }
+          val next = parsedParams.get("next").map { n => n.split(",").toList }
 
           val (relPath, descend) = if (link.startsWith("!")) {
             link.drop(1) -> false

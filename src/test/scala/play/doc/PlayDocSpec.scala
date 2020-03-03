@@ -25,8 +25,11 @@ class PlayDocSpec extends Specification {
     "allow extracting code snippets" in test("simple", "Snippet")
 
     "allow extracting code snippets using string that exists as substring elsewhere" in test("one", "One")
-    "allow extracting code snippets using string as full string" in test("onetwothree", "One Two Three") // paired with previous test
-    "fail on substring code snippets using string as trailing" in failTest("three")                      // paired with previous test
+    "allow extracting code snippets using string as full string" in test(
+      "onetwothree",
+      "One Two Three"
+    )                                                                               // paired with previous test
+    "fail on substring code snippets using string as trailing" in failTest("three") // paired with previous test
 
     "fail on substring with no full string match" in failTest("leading")
     "should match on full string" in test("leading-following", "Leading Following") // paired with test for exception
