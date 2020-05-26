@@ -160,19 +160,21 @@ class PlayDoc(
       }
 
       // Recursively search for Sidebar
-      def findSideBar(file: Option[File]): Option[String] = file match {
-        case None => None
-        case Some(parent) =>
-          val sidebar = render(parent.getPath + "/_Sidebar.md", headerIds = false)
-          sidebar.orElse(findSideBar(Option(parent.getParentFile)))
-      }
+      def findSideBar(file: Option[File]): Option[String] =
+        file match {
+          case None => None
+          case Some(parent) =>
+            val sidebar = render(parent.getPath + "/_Sidebar.md", headerIds = false)
+            sidebar.orElse(findSideBar(Option(parent.getParentFile)))
+        }
 
-      def findBreadcrumbs(file: Option[File]): Option[String] = file match {
-        case None => None
-        case Some(parent) =>
-          val breadcrumbs = render(parent.getPath + "/_Breadcrumbs.md", headerIds = false)
-          breadcrumbs.orElse(findBreadcrumbs(Option(parent.getParentFile)))
-      }
+      def findBreadcrumbs(file: Option[File]): Option[String] =
+        file match {
+          case None => None
+          case Some(parent) =>
+            val breadcrumbs = render(parent.getPath + "/_Breadcrumbs.md", headerIds = false)
+            breadcrumbs.orElse(findBreadcrumbs(Option(parent.getParentFile)))
+        }
 
       // Render both the markdown and the sidebar
       render(pagePath).map { markdown =>
@@ -333,113 +335,116 @@ class PlayDoc(
       codeRepository.loadFile(path) { is => IOUtils.readLines(is).asScala.toSeq }
     }
 
-    def visit(node: Node, visitor: Visitor, printer: Printer) = node match {
-      case code: CodeReferenceNode => {
-        // Label is after the #, or if no #, then is the link label
-        val (source, label) = code.getSource.split("#", 2) match {
-          case Array(source, label) => (source, label)
-          case Array(source)        => (source, code.getLabel)
-        }
-
-        // The file is either relative to current page or absolute, under the root
-        val sourceFile = if (source.startsWith("/")) {
-          repo(source.drop(1))
-        } else {
-          repo(pagePath + source)
-        }
-
-        val segment = if (label.nonEmpty) {
-          val labelPattern = ("""\s*#\Q""" + label + """\E(\s|\z)""").r
-          sourceFile.flatMap { sourceCode =>
-            val notLabel = (s: String) => labelPattern.findFirstIn(s).isEmpty
-            val segment  = sourceCode.dropWhile(notLabel).drop(1).takeWhile(notLabel)
-            if (segment.isEmpty) {
-              None
-            } else {
-              Some(segment)
-            }
+    def visit(node: Node, visitor: Visitor, printer: Printer) =
+      node match {
+        case code: CodeReferenceNode => {
+          // Label is after the #, or if no #, then is the link label
+          val (source, label) = code.getSource.split("#", 2) match {
+            case Array(source, label) => (source, label)
+            case Array(source)        => (source, code.getLabel)
           }
-        } else {
-          sourceFile
-        }
 
-        segment
-          .map { segment =>
-            // Calculate the indent, which is equal to the smallest indent of any line, excluding lines that only consist
-            // of space characters
-            val indent = segment
-              .map { line => if (!line.exists(_ != ' ')) None else Some(line.indexWhere(_ != ' ')) }
-              .reduce((i1, i2) =>
-                (i1, i2) match {
-                  case (None, None)         => None
-                  case (i, None)            => i
-                  case (None, i)            => i
-                  case (Some(i1), Some(i2)) => Some(math.min(i1, i2))
-                }
-              )
-              .getOrElse(0)
+          // The file is either relative to current page or absolute, under the root
+          val sourceFile = if (source.startsWith("/")) {
+            repo(source.drop(1))
+          } else {
+            repo(pagePath + source)
+          }
 
-            // Process directives in segment
-            case class State(buffer: StringBuilder = new StringBuilder, skip: Option[Int] = None) {
-              def dropIndentAndAppendLine(s: String): State = {
-                buffer.append(s.drop(indent)).append("\n")
-                this
-              }
-              def appendLine(s: String): State = {
-                buffer.append(s).append("\n")
-                this
+          val segment = if (label.nonEmpty) {
+            val labelPattern = ("""\s*#\Q""" + label + """\E(\s|\z)""").r
+            sourceFile.flatMap { sourceCode =>
+              val notLabel = (s: String) => labelPattern.findFirstIn(s).isEmpty
+              val segment  = sourceCode.dropWhile(notLabel).drop(1).takeWhile(notLabel)
+              if (segment.isEmpty) {
+                None
+              } else {
+                Some(segment)
               }
             }
-            val compiledSegment = segment
-              .foldLeft(State()) { (state, line) =>
-                state.skip match {
-                  case Some(n) if (n > 1) => state.copy(skip = Some(n - 1))
-                  case Some(n)            => state.copy(skip = None)
-                  case None =>
-                    line match {
-                      case Insert(code)      => state.appendLine(code)
-                      case SkipN(n)          => state.copy(skip = Some(n.toInt))
-                      case Skip()            => state
-                      case ReplaceNext(code) => state.appendLine(code).copy(skip = Some(1))
-                      case _                 => state.dropIndentAndAppendLine(line)
-                    }
+          } else {
+            sourceFile
+          }
+
+          segment
+            .map { segment =>
+              // Calculate the indent, which is equal to the smallest indent of any line, excluding lines that only consist
+              // of space characters
+              val indent = segment
+                .map { line => if (!line.exists(_ != ' ')) None else Some(line.indexWhere(_ != ' ')) }
+                .reduce((i1, i2) =>
+                  (i1, i2) match {
+                    case (None, None)         => None
+                    case (i, None)            => i
+                    case (None, i)            => i
+                    case (Some(i1), Some(i2)) => Some(math.min(i1, i2))
+                  }
+                )
+                .getOrElse(0)
+
+              // Process directives in segment
+              case class State(buffer: StringBuilder = new StringBuilder, skip: Option[Int] = None) {
+                def dropIndentAndAppendLine(s: String): State = {
+                  buffer.append(s.drop(indent)).append("\n")
+                  this
+                }
+                def appendLine(s: String): State = {
+                  buffer.append(s).append("\n")
+                  this
                 }
               }
-              .buffer /* Drop last newline */
-              .dropRight(1)
-              .toString()
+              val compiledSegment = segment
+                .foldLeft(State()) { (state, line) =>
+                  state.skip match {
+                    case Some(n) if n > 1 => state.copy(skip = Some(n - 1))
+                    case Some(n)          => state.copy(skip = None)
+                    case None =>
+                      line match {
+                        case Insert(code)      => state.appendLine(code)
+                        case SkipN(n)          => state.copy(skip = Some(n.toInt))
+                        case Skip()            => state
+                        case ReplaceNext(code) => state.appendLine(code).copy(skip = Some(1))
+                        case _                 => state.dropIndentAndAppendLine(line)
+                      }
+                  }
+                }
+                .buffer /* Drop last newline */
+                .dropRight(1)
+                .toString()
 
-            // Guess the type of the file
-            val fileType = source.split("\\.") match {
-              case withExtension if (withExtension.length > 1) => Some(withExtension.last)
-              case _                                           => None
+              // Guess the type of the file
+              val fileType = source.split("\\.") match {
+                case withExtension if withExtension.length > 1 => Some(withExtension.last)
+                case _                                         => None
+              }
+
+              // And visit it
+              fileType
+                .map(t => new VerbatimNode(compiledSegment, t))
+                .getOrElse(new VerbatimNode(compiledSegment))
+                .accept(visitor)
+
+              true
             }
-
-            // And visit it
-            fileType
-              .map(t => new VerbatimNode(compiledSegment, t))
-              .getOrElse(new VerbatimNode(compiledSegment))
-              .accept(visitor)
-
-            true
-          }
-          .getOrElse {
-            printer.print("Unable to find label " + label + " in source file " + source)
-            true
-          }
+            .getOrElse {
+              printer.print("Unable to find label " + label + " in source file " + source)
+              true
+            }
+        }
+        case _ => false
       }
-      case _ => false
-    }
   }
 
   private class VariableSerializer(variables: Map[String, String]) extends ToHtmlSerializerPlugin {
-    def visit(node: Node, visitor: Visitor, printer: Printer) = node match {
-      case variable: VariableNode => {
-        new TextNode(variables.get(variable.getName).getOrElse("Unknown variable: " + variable.getName)).accept(visitor)
-        true
+    def visit(node: Node, visitor: Visitor, printer: Printer) =
+      node match {
+        case variable: VariableNode => {
+          new TextNode(variables.get(variable.getName).getOrElse("Unknown variable: " + variable.getName))
+            .accept(visitor)
+          true
+        }
+        case _ => false
       }
-      case _ => false
-    }
   }
 
   private class VerbatimSerializerWrapper(wrapped: VerbatimSerializer) extends VerbatimSerializer {
@@ -450,14 +455,15 @@ class PlayDoc(
   }
 
   private class TocSerializer(maybeToc: Option[Toc]) extends ToHtmlSerializerPlugin {
-    def visit(node: Node, visitor: Visitor, printer: Printer) = node match {
-      case tocNode: TocNode =>
-        maybeToc.fold(false) { t =>
-          printer.print(templates.toc(t))
-          true
-        }
-      case _ => false
-    }
+    def visit(node: Node, visitor: Visitor, printer: Printer) =
+      node match {
+        case tocNode: TocNode =>
+          maybeToc.fold(false) { t =>
+            printer.print(templates.toc(t))
+            true
+          }
+        case _ => false
+      }
   }
 
   private val inputStreamToString: InputStream => String = IOUtils.toString(_, "utf-8")

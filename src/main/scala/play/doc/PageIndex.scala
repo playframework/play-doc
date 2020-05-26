@@ -51,12 +51,13 @@ case class TocPage(page: String, title: String, next: Option[List[String]]) exte
 class PageIndex(val toc: Toc, path: Option[String] = None) {
   private val byPage: Map[String, Page] = {
     // First, create a by name index
-    def indexByName(node: TocTree): List[(String, TocTree)] = node match {
-      case Toc(name, _, nodes, _) =>
-        (name -> node) :: nodes.map(_._2).flatMap(indexByName)
-      case TocPage(name, _, _) =>
-        List(name -> node)
-    }
+    def indexByName(node: TocTree): List[(String, TocTree)] =
+      node match {
+        case Toc(name, _, nodes, _) =>
+          (name -> node) :: nodes.map(_._2).flatMap(indexByName)
+        case TocPage(name, _, _) =>
+          List(name -> node)
+      }
     val byNameMap = indexByName(toc).toMap
 
     def indexPages(path: Option[String], nav: List[Toc], toc: Toc): List[Page] = {
