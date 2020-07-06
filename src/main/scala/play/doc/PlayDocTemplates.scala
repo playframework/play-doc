@@ -30,7 +30,6 @@ trait PlayDocTemplates {
   def sidebar(hierarchy: List[Toc]): String
 
   /**
-   *
    * @param hierarchy The hierarchy to render in the breadcrumbs.
    * @return
    */
