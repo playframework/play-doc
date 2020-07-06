@@ -94,7 +94,9 @@ class PlayDocSpec extends Specification {
 
   "play version variables" should {
     "be substituted with the Play version" in {
-      oldRenderer.render("The current Play version is %PLAY_VERSION%") must_== "<p>The current Play version is 2.1.3</p>"
+      oldRenderer.render(
+        "The current Play version is %PLAY_VERSION%"
+      ) must_== "<p>The current Play version is 2.1.3</p>"
     }
     "work in verbatim blocks" in {
       oldRenderer.render("""
