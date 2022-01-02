@@ -35,8 +35,8 @@ lazy val `play-doc` = (project in file("."))
 
 libraryDependencies ++= Seq(
   "org.pegdown" % "pegdown"     % "1.6.0",
-  "commons-io"  % "commons-io"  % "2.8.0",
-  "org.specs2" %% "specs2-core" % "4.10.5" % Test
+  "commons-io"  % "commons-io"  % "2.11.0",
+  "org.specs2" %% "specs2-core" % "4.13.1" % Test
 )
 
 javacOptions ++= Seq(
