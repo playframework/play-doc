@@ -42,39 +42,6 @@ class PlayDoc(
     templates: PlayDocTemplates,
     pageExtension: Option[String]
 ) {
-  @deprecated("Use the primary constructor", "1.3.0")
-  def this(
-      markdownRepository: FileRepository,
-      codeRepository: FileRepository,
-      resources: String,
-      playVersion: String,
-      pageIndex: Option[PageIndex],
-      nextText: String
-  ) =
-    this(
-      markdownRepository,
-      codeRepository,
-      resources,
-      playVersion,
-      pageIndex,
-      new TranslatedPlayDocTemplates(nextText),
-      None
-    )
-
-  @deprecated("Use the primary constructor", "1.3.0")
-  def this(markdownRepository: FileRepository, codeRepository: FileRepository, resources: String, playVersion: String) =
-    this(markdownRepository, codeRepository, resources, playVersion, None, PlayDocTemplates, None)
-
-  @deprecated("Use the primary constructor", "1.4.0")
-  def this(
-      markdownRepository: FileRepository,
-      codeRepository: FileRepository,
-      resources: String,
-      playVersion: String,
-      pageIndex: Option[PageIndex],
-      templates: PlayDocTemplates
-  ) =
-    this(markdownRepository, codeRepository, resources, playVersion, pageIndex, templates, None)
 
   val PlayVersionVariableName = "%PLAY_VERSION%"
 
