@@ -1,17 +1,10 @@
-import interplay.ScalaVersions
-import interplay.ScalaVersions._
-
 // Customise sbt-dynver's behaviour to make it work with tags which aren't v-prefixed
-dynverVTagPrefix in ThisBuild := false
+(ThisBuild / dynverVTagPrefix) := false
 
 // Sanity-check: assert that version comes from a tag (e.g. not a too-shallow clone)
 // https://github.com/dwijnand/sbt-dynver/#sanity-checking-the-version
 Global / onLoad := (Global / onLoad).value.andThen { s =>
-  val v = version.value
-  if (dynverGitDescribeOutput.value.hasNoTags)
-    throw new MessageOnlyException(
-      s"Failed to derive version from git tags. Maybe run `git fetch --unshallow`? Version: $v"
-    )
+  dynverAssertTagVersion.value
   s
 }
 
@@ -35,8 +28,8 @@ lazy val `play-doc` = (project in file("."))
 
 libraryDependencies ++= Seq(
   "org.pegdown" % "pegdown"     % "1.6.0",
-  "commons-io"  % "commons-io"  % "2.8.0",
-  "org.specs2" %% "specs2-core" % "4.10.5" % Test
+  "commons-io"  % "commons-io"  % "2.11.0",
+  "org.specs2" %% "specs2-core" % "4.13.1" % Test
 )
 
 javacOptions ++= Seq(
@@ -61,4 +54,4 @@ scalacOptions ++= Seq(
   "-Ywarn-dead-code",
 )
 
-playBuildRepoName in ThisBuild := "play-doc"
+(ThisBuild / playBuildRepoName) := "play-doc"
