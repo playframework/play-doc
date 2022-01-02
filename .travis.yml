@@ -12,7 +12,6 @@ env:
   - TRAVIS_JDK=11
 
 scala:
-  - 2.12.15
   - 2.13.7
 
 script: sbt ++$TRAVIS_SCALA_VERSION test publishLocal scalafmtCheckAll scalafmtSbtCheck
