@@ -120,10 +120,9 @@ class JarRepository(jarFile: JarFile, base: Option[String] = None) extends FileR
   }
 
   def handleFile[A](path: String)(handler: FileHandle => A) = {
-    getEntry(path).map {
-      case (entry, is) =>
-        val handle = FileHandle(entry.getName.split(PathSeparator).last, entry.getSize, is, () => is.close())
-        handler(handle)
+    getEntry(path).map { case (entry, is) =>
+      val handle = FileHandle(entry.getName.split(PathSeparator).last, entry.getSize, is, () => is.close())
+      handler(handle)
     }
   }
 
