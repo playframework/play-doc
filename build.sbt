@@ -10,21 +10,6 @@ Global / onLoad := (Global / onLoad).value.andThen { s =>
 
 lazy val `play-doc` = (project in file("."))
   .enablePlugins(PlayLibrary, SbtTwirl, PlayReleaseBase)
-  .settings(
-    Seq(
-      releaseProcess := {
-        import ReleaseTransformations._
-        Seq[ReleaseStep](
-          checkSnapshotDependencies,
-          runClean,
-          releaseStepCommandAndRemaining("+test"),
-          releaseStepCommandAndRemaining("+publishSigned"),
-          releaseStepCommand("sonatypeBundleRelease"),
-          pushChanges // <- this needs to be removed when releasing from tag
-        )
-      }
-    )
-  )
 
 libraryDependencies ++= Seq(
   "org.pegdown" % "pegdown"     % "1.6.0",
@@ -55,3 +40,11 @@ scalacOptions ++= Seq(
 )
 
 (ThisBuild / playBuildRepoName) := "play-doc"
+
+addCommandAlias(
+  "validateCode",
+  List(
+    "scalafmtSbtCheck",
+    "scalafmtCheckAll",
+  ).mkString(";")
+)
