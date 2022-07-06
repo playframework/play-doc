@@ -8,29 +8,36 @@ trait PlayDocTemplates {
   /**
    * Render the next link.
    *
-   * @param toc The table of contents.
-   * @return The next link.
+   * @param toc
+   *   The table of contents.
+   * @return
+   *   The next link.
    */
   def nextLink(toc: TocTree): String
 
   /**
    * Render a set of next links.
    *
-   * @param toc The list of table of contents.
-   * @return The next links.
+   * @param toc
+   *   The list of table of contents.
+   * @return
+   *   The next links.
    */
   def nextLinks(toc: List[TocTree]) = toc.map(nextLink).mkString("")
 
   /**
    * Render the sidebar.
    *
-   * @param hierarchy The hierarchy to render in the sidebar.
-   * @return The sidebar.
+   * @param hierarchy
+   *   The hierarchy to render in the sidebar.
+   * @return
+   *   The sidebar.
    */
   def sidebar(hierarchy: List[Toc]): String
 
   /**
-   * @param hierarchy The hierarchy to render in the breadcrumbs.
+   * @param hierarchy
+   *   The hierarchy to render in the breadcrumbs.
    * @return
    */
   def breadcrumbs(hierarchy: List[Toc]): String
@@ -38,8 +45,10 @@ trait PlayDocTemplates {
   /**
    * Render a table of contents.
    *
-   * @param toc The table of contents to render.
-   * @return The table of contents.
+   * @param toc
+   *   The table of contents to render.
+   * @return
+   *   The table of contents.
    */
   def toc(toc: Toc): String
 }

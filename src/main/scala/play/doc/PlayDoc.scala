@@ -14,24 +14,35 @@ import scala.collection.JavaConverters._
 /**
  * A rendered page
  *
- * @param html The HTML for the page
- * @param sidebarHtml The HTML for the sidebar
- * @param path The path that the page was found at
- * @param breadcrumbsHtml The HTML for the breadcrumbs.
+ * @param html
+ *   The HTML for the page
+ * @param sidebarHtml
+ *   The HTML for the sidebar
+ * @param path
+ *   The path that the page was found at
+ * @param breadcrumbsHtml
+ *   The HTML for the breadcrumbs.
  */
 case class RenderedPage(html: String, sidebarHtml: Option[String], path: String, breadcrumbsHtml: Option[String])
 
 /**
  * Play documentation support
  *
- * @param markdownRepository Repository for finding markdown files
- * @param codeRepository Repository for finding code samples
- * @param resources The resources path
- * @param playVersion The version of Play we are rendering docs for.
- * @param pageIndex An optional page index. If None, will use the old approach of searching up the
- *                  heirarchy for sidebar pages, otherwise will use the page index to render the sidebar.
- * @param templates The templates to render snippets.
- * @param pageExtension The extension to add to rendered pages - used for rendering links.
+ * @param markdownRepository
+ *   Repository for finding markdown files
+ * @param codeRepository
+ *   Repository for finding code samples
+ * @param resources
+ *   The resources path
+ * @param playVersion
+ *   The version of Play we are rendering docs for.
+ * @param pageIndex
+ *   An optional page index. If None, will use the old approach of searching up the heirarchy for sidebar pages,
+ *   otherwise will use the page index to render the sidebar.
+ * @param templates
+ *   The templates to render snippets.
+ * @param pageExtension
+ *   The extension to add to rendered pages - used for rendering links.
  */
 class PlayDoc(
     markdownRepository: FileRepository,
@@ -55,8 +66,10 @@ class PlayDoc(
   /**
    * Render a Play documentation page.
    *
-   * @param pageName The page to render, without path or markdown extension.
-   * @return If found a tuple of the rendered page and the rendered sidebar, if the sidebar was found.
+   * @param pageName
+   *   The page to render, without path or markdown extension.
+   * @return
+   *   If found a tuple of the rendered page and the rendered sidebar, if the sidebar was found.
    */
   def renderPage(pageName: String): Option[RenderedPage] = {
     pageIndex.fold {
@@ -79,7 +92,8 @@ class PlayDoc(
   /**
    * Render all the pages of the documentation
    *
-   * @param singlePage Whether the pages are being rendered to be formatted on a single page
+   * @param singlePage
+   *   Whether the pages are being rendered to be formatted on a single page
    */
   def renderAllPages(singlePage: Boolean): List[(String, String)] = {
     pageIndex match {
@@ -110,8 +124,10 @@ class PlayDoc(
   /**
    * Render a Play documentation page.
    *
-   * @param page The page to render, without path or markdown extension.
-   * @return If found a tuple of the rendered page and the rendered sidebar, if the sidebar was found.
+   * @param page
+   *   The page to render, without path or markdown extension.
+   * @return
+   *   If found a tuple of the rendered page and the rendered sidebar, if the sidebar was found.
    */
   private def renderOldPage(page: String): Option[RenderedPage] = {
     // Find the markdown file
@@ -185,7 +201,7 @@ class PlayDoc(
         val link = image match {
           case full if full.startsWith("http://")   => full
           case absolute if absolute.startsWith("/") => resources + absolute
-          case relative                             => resources + "/" + relativePath.map(_ + "/").getOrElse("") + relative
+          case relative => resources + "/" + relativePath.map(_ + "/").getOrElse("") + relative
         }
         (link, """<img src="""" + link + """"/>""")
       case link =>

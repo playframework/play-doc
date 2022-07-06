@@ -10,10 +10,14 @@ import scala.collection.JavaConverters._
 /**
  * Access to file data, provided to the handler when `handleFile` is called.
  *
- * @param name The name of the file.
- * @param size The size of the file in bytes.
- * @param is A stream with the file data.
- * @param close Used by the handler to close the file when the handler is finished.
+ * @param name
+ *   The name of the file.
+ * @param size
+ *   The size of the file in bytes.
+ * @param is
+ *   A stream with the file data.
+ * @param close
+ *   Used by the handler to close the file when the handler is finished.
  */
 case class FileHandle(name: String, size: Long, is: InputStream, close: () => Unit)
 
@@ -23,35 +27,40 @@ case class FileHandle(name: String, size: Long, is: InputStream, close: () => Un
 trait FileRepository {
 
   /**
-   * Load a file using the given loader. If the file is found then the
-   * file will be opened and loader will be called with its content. The
-   * file will be closed automatically when loader returns a value or throws
-   * an exception.
+   * Load a file using the given loader. If the file is found then the file will be opened and loader will be called
+   * with its content. The file will be closed automatically when loader returns a value or throws an exception.
    *
-   * @param path The path of the file to load
-   * @param loader The loader to load the file
-   * @return The file, as loaded by the loader, or None if the doesn't exist
+   * @param path
+   *   The path of the file to load
+   * @param loader
+   *   The loader to load the file
+   * @return
+   *   The file, as loaded by the loader, or None if the doesn't exist
    */
   def loadFile[A](path: String)(loader: InputStream => A): Option[A]
 
   /**
-   * Load a file using the given handler.  If the file is found then the
-   * file will be opened and handler will be called with the file's handle. The
-   * handler must call the close method on the handle to ensure that the file is closed
+   * Load a file using the given handler. If the file is found then the file will be opened and handler will be called
+   * with the file's handle. The handler must call the close method on the handle to ensure that the file is closed
    * properly.
    *
-   * @param path The path of the file to load
-   * @param handler The handler to handle the file
-   * @return The file, as loaded by the loader, or None if the doesn't exist
+   * @param path
+   *   The path of the file to load
+   * @param handler
+   *   The handler to handle the file
+   * @return
+   *   The file, as loaded by the loader, or None if the doesn't exist
    */
   def handleFile[A](path: String)(handler: FileHandle => A): Option[A]
 
   /**
-   * Find a file with the given name.  The repositories directory structure is searched, and the
-   * path of the first file found with that name is returned.
+   * Find a file with the given name. The repositories directory structure is searched, and the path of the first file
+   * found with that name is returned.
    *
-   * @param name The name of the file to find
-   * @return The path of the file, or None if it couldn't be found
+   * @param name
+   *   The name of the file to find
+   * @return
+   *   The path of the file, or None if it couldn't be found
    */
   def findFileWithName(name: String): Option[String]
 }
@@ -59,7 +68,8 @@ trait FileRepository {
 /**
  * Simple filesystem implementation of the FileRepository
  *
- * @param base The base dir of the file
+ * @param base
+ *   The base dir of the file
  */
 class FilesystemRepository(base: File) extends FileRepository {
   private def cleanUp[A](loader: InputStream => A) = { is: InputStream =>
@@ -141,7 +151,7 @@ class JarRepository(jarFile: JarFile, base: Option[String] = None) extends FileR
       }
 
     val slashName = PathSeparator + name
-    val found     = jarFile.entries().asScala.map(_.getName).find(n => startsWith(n, basePrefix) && endsWith(n, slashName))
+    val found = jarFile.entries().asScala.map(_.getName).find(n => startsWith(n, basePrefix) && endsWith(n, slashName))
     found.map(_.substring(basePrefix.length))
   }
 
