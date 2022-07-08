@@ -21,9 +21,12 @@ sealed trait TocTree {
 /**
  * A table of contents
  *
- * @param title The title of this table of contents
- * @param nodes The nodes in the table of contents
- * @param descend Whether a table of contents should descend into this table of contents
+ * @param title
+ *   The title of this table of contents
+ * @param nodes
+ *   The nodes in the table of contents
+ * @param descend
+ *   Whether a table of contents should descend into this table of contents
  */
 case class Toc(name: String, title: String, nodes: List[(String, TocTree)], descend: Boolean = true) extends TocTree {
   require(nodes.nonEmpty)
@@ -34,19 +37,22 @@ case class Toc(name: String, title: String, nodes: List[(String, TocTree)], desc
 /**
  * A page (leaf node) pointed to by the table of contents
  *
- * @param page The page
- * @param title The title of the page
- * @param next Explicitly provided next links. If None, then the index structure are used to generate the next links,
- *             otherwise these links should be used. Note that `Some(Nil)` is distinct from `None`, in that `Some(Nil)`
- *             means there should be no next links, whereas `None` means let the index decide what the next link should
- *             be.
+ * @param page
+ *   The page
+ * @param title
+ *   The title of the page
+ * @param next
+ *   Explicitly provided next links. If None, then the index structure are used to generate the next links, otherwise
+ *   these links should be used. Note that `Some(Nil)` is distinct from `None`, in that `Some(Nil)` means there should
+ *   be no next links, whereas `None` means let the index decide what the next link should be.
  */
 case class TocPage(page: String, title: String, next: Option[List[String]]) extends TocTree
 
 /**
  * The page index
  *
- * @param toc The table of contents
+ * @param toc
+ *   The table of contents
  */
 class PageIndex(val toc: Toc, path: Option[String] = None) {
   private val byPage: Map[String, Page] = {
@@ -105,12 +111,17 @@ class PageIndex(val toc: Toc, path: Option[String] = None) {
 /**
  * A page
  *
- * @param page The page name
- * @param path The path to the page
- * @param title The title of the page
- * @param nav The navigation associated with the page, this is a list of all the table of contents nodes, starting from
- *            the one that this page is in, all the way up the tree to the root node
- * @param nextLinks A list of next links
+ * @param page
+ *   The page name
+ * @param path
+ *   The path to the page
+ * @param title
+ *   The title of the page
+ * @param nav
+ *   The navigation associated with the page, this is a list of all the table of contents nodes, starting from the one
+ *   that this page is in, all the way up the tree to the root node
+ * @param nextLinks
+ *   A list of next links
  */
 case class Page(page: String, path: Option[String], title: String, nav: List[Toc], nextLinks: List[TocTree]) {
   def fullPath = path.fold(page)(_ + "/" + page)

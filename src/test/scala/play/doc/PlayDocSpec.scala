@@ -6,7 +6,7 @@ import java.io.File
 class PlayDocSpec extends Specification {
   def fileFromClasspath(name: String) = new File(Thread.currentThread.getContextClassLoader.getResource(name).toURI)
   val repo                            = new FilesystemRepository(fileFromClasspath("file-placeholder").getParentFile)
-  val oldRenderer                     = new PlayDoc(repo, repo, "resources", "2.1.3", None, new TranslatedPlayDocTemplates("Next"), None)
+  val oldRenderer = new PlayDoc(repo, repo, "resources", "2.1.3", None, new TranslatedPlayDocTemplates("Next"), None)
 
   val renderer =
     new PlayDoc(
