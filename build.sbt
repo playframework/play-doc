@@ -25,7 +25,7 @@ javacOptions ++= Seq(
 )
 
 scalacOptions ++= Seq(
-  "--release",
+  "-release",
   "11",
   "-encoding",
   "utf8",
