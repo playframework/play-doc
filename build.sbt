@@ -24,16 +24,15 @@ libraryDependencies ++= Seq(
 )
 
 javacOptions ++= Seq(
-  "-source",
-  "1.8",
-  "-target",
-  "1.8",
+  "--release",
+  "11",
   "-Xlint:deprecation",
   "-Xlint:unchecked",
 )
 
 scalacOptions ++= Seq(
-  "-target:jvm-1.8",
+  "-release",
+  "11",
   "-encoding",
   "utf8",
   "-deprecation",
