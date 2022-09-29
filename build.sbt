@@ -9,7 +9,7 @@ Global / onLoad := (Global / onLoad).value.andThen { s =>
 }
 
 lazy val `play-doc` = (project in file("."))
-  .enablePlugins(PlayLibrary, SbtTwirl, PlayReleaseBase)
+  .enablePlugins(PlayLibrary, SbtTwirl)
 
 libraryDependencies ++= Seq(
   "org.pegdown" % "pegdown"     % "1.6.0",
