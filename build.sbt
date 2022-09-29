@@ -11,7 +11,7 @@ Global / onLoad := (Global / onLoad).value.andThen { s =>
 }
 
 lazy val `play-doc` = (project in file("."))
-  .enablePlugins(PlayLibrary, SbtTwirl, PlayReleaseBase)
+  .enablePlugins(PlayLibrary, SbtTwirl)
   .settings(
     crossScalaVersions := Seq(scala212, scala213)
   )
