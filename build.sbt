@@ -11,28 +11,28 @@ Global / onLoad := (Global / onLoad).value.andThen { s =>
 }
 
 lazy val `play-doc` = (project in file("."))
-  .enablePlugins(PlayLibrary, SbtTwirl, PlayReleaseBase)
+  .enablePlugins(PlayLibrary, SbtTwirl)
   .settings(
     crossScalaVersions := Seq(scala212, scala213)
   )
 
 libraryDependencies ++= Seq(
-  "org.pegdown" % "pegdown"     % "1.6.0",
-  "commons-io"  % "commons-io"  % "2.11.0",
-  "org.specs2" %% "specs2-core" % "4.16.1" % Test
+  ("org.pegdown"  % "pegdown"        % "1.6.0").exclude("org.parboiled", "parboiled-java"),
+  "org.parboiled" % "parboiled-java" % "1.4.1",
+  "commons-io"    % "commons-io"     % "2.11.0",
+  "org.specs2"   %% "specs2-core"    % "4.16.1" % Test
 )
 
 javacOptions ++= Seq(
-  "-source",
-  "1.8",
-  "-target",
-  "1.8",
+  "--release",
+  "11",
   "-Xlint:deprecation",
   "-Xlint:unchecked",
 )
 
 scalacOptions ++= Seq(
-  "-target:jvm-1.8",
+  "-release",
+  "11",
   "-encoding",
   "utf8",
   "-deprecation",
