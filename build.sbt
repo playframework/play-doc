@@ -1,3 +1,5 @@
+import interplay.ScalaVersions._
+
 // Customise sbt-dynver's behaviour to make it work with tags which aren't v-prefixed
 (ThisBuild / dynverVTagPrefix) := false
 
@@ -10,6 +12,9 @@ Global / onLoad := (Global / onLoad).value.andThen { s =>
 
 lazy val `play-doc` = (project in file("."))
   .enablePlugins(PlayLibrary, SbtTwirl, PlayReleaseBase)
+  .settings(
+    crossScalaVersions := Seq(scala212, scala213)
+  )
 
 libraryDependencies ++= Seq(
   "org.pegdown" % "pegdown"     % "1.6.0",
