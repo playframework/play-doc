@@ -66,3 +66,7 @@ The supported directives are replace, skip (followed by the number of lines to s
 ## Play Version
 
 Any %PLAY_VERSION% variables will be substituted with the current version of Play.
+
+## Releasing a new version
+
+See https://github.com/playframework/.github/blob/main/RELEASING.md
