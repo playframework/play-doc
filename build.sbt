@@ -1,4 +1,4 @@
-import interplay.ScalaVersions._
+// import interplay.ScalaVersions._
 
 // Customise sbt-dynver's behaviour to make it work with tags which aren't v-prefixed
 (ThisBuild / dynverVTagPrefix) := false
@@ -10,10 +10,26 @@ Global / onLoad := (Global / onLoad).value.andThen { s =>
   s
 }
 
+lazy val scala212 = "2.12.17"
+lazy val scala213 = "2.13.10"
+lazy val scala3 = "3.2.2"
+
 lazy val `play-doc` = (project in file("."))
-  .enablePlugins(PlayLibrary, SbtTwirl)
+  .enablePlugins(SbtTwirl)
   .settings(
-    crossScalaVersions := Seq(scala212, scala213, scala3)
+    crossScalaVersions := Seq(scala212, scala213, scala3),
+    scalacOptions ++= {
+      CrossVersion.partialVersion(scalaVersion.value) match {
+        case Some((2, _)) =>
+          Seq(
+            "-Xlint",
+            "-Ywarn-unused:imports",
+            "-Xlint:nullary-unit",
+            "-Ywarn-dead-code",
+          )
+        case _ => Nil
+      }
+    }
   )
 
 libraryDependencies ++= Seq(
@@ -38,13 +54,9 @@ scalacOptions ++= Seq(
   "-deprecation",
   "-feature",
   "-unchecked",
-  "-Xlint",
-  "-Ywarn-unused:imports",
-  "-Xlint:nullary-unit",
-  "-Ywarn-dead-code",
 )
 
-(ThisBuild / playBuildRepoName) := "play-doc"
+// ThisBuild = "play-doc"
 
 addCommandAlias(
   "validateCode",

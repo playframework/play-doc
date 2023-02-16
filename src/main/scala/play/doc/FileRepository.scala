@@ -72,7 +72,7 @@ trait FileRepository {
  *   The base dir of the file
  */
 class FilesystemRepository(base: File) extends FileRepository {
-  private def cleanUp[A](loader: InputStream => A) = { is: InputStream =>
+  private def cleanUp[A](loader: InputStream => A)(is: InputStream) = {
     try {
       loader(is)
     } finally {
