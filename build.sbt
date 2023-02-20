@@ -27,10 +27,6 @@ lazy val `play-doc` = (project in file("."))
             "-Xlint:nullary-unit",
             "-Ywarn-dead-code",
           )
-        case Some((3, _)) =>
-          Seq(
-            "-explain"
-          )
         case _ => Nil
       }
     }
