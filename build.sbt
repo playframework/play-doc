@@ -10,10 +10,6 @@ Global / onLoad := (Global / onLoad).value.andThen { s =>
   s
 }
 
-// lazy val scala212 = "2.12.17"
-// lazy val scala213 = "2.13.10"
-// lazy val scala3 = "3.2.2"
-
 lazy val `play-doc` = (project in file("."))
   .enablePlugins(PlayLibrary, SbtTwirl)
   .settings(
