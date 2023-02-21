@@ -45,11 +45,6 @@ javacOptions ++= Seq(
 scalacOptions ++= Seq(
   "-release",
   "11",
-  "-encoding",
-  "utf8",
-  "-deprecation",
-  "-feature",
-  "-unchecked",
 )
 
 (ThisBuild / playBuildRepoName) := "play-doc"
