@@ -151,7 +151,7 @@ object PageIndex {
         TocPage(page, title, next)
       ) { content =>
         // https://github.com/scala/bug/issues/11125#issuecomment-423375868
-        val lines = augmentString(content).lines.toList.map(_.trim).filter(_.nonEmpty)
+        val lines = augmentString(content).linesIterator.toList.map(_.trim).filter(_.nonEmpty)
         // Remaining lines are the entries of the contents
         val tocNodes = lines.map { entry =>
           val linkAndTitle :: params = entry.split(";").toList

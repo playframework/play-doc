@@ -22,6 +22,7 @@ lazy val `play-doc` = (project in file("."))
             "-Ywarn-unused:imports",
             "-Xlint:nullary-unit",
             "-Ywarn-dead-code",
+            "-Xsource:3",
           )
         case _ => Nil
       }

@@ -5,7 +5,7 @@ import java.io.File
 import java.io.InputStream
 import java.util.jar.JarFile
 import java.util.zip.ZipEntry
-import scala.collection.JavaConverters._
+import scala.collection.JavaConverters.*
 
 /**
  * Access to file data, provided to the handler when `handleFile` is called.
@@ -103,7 +103,7 @@ class FilesystemRepository(base: File) extends FileRepository {
   def findFileWithName(name: String) = {
     def findFile(name: String)(dir: File): Option[File] = {
       dir.listFiles().find(file => file.isFile && file.getName.equalsIgnoreCase(name)).orElse {
-        dir.listFiles().filter(_.isDirectory).collectFirst(Function.unlift(findFile(name) _))
+        dir.listFiles().filter(_.isDirectory).collectFirst(Function.unlift(findFile(name)))
       }
     }
     findFile(name)(base).map(_.getAbsolutePath.drop(base.getAbsolutePath.size + 1))
