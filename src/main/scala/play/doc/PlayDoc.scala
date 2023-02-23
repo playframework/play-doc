@@ -4,12 +4,12 @@ import java.io.InputStream
 import java.io.File
 import java.util.Collections
 import java.util.Arrays
-import org.pegdown._
+import org.pegdown.*
 import org.pegdown.plugins.ToHtmlSerializerPlugin
 import org.pegdown.plugins.PegDownPlugins
-import org.pegdown.ast._
+import org.pegdown.ast.*
 import org.apache.commons.io.IOUtils
-import scala.collection.JavaConverters._
+import scala.collection.JavaConverters.*
 
 /**
  * A rendered page
@@ -264,7 +264,7 @@ class PlayDoc(
           if (headerIds) {
             printer.print(" id=\"")
 
-            import scala.collection.JavaConverters._
+            import scala.collection.JavaConverters.*
             def collectTextNodes(node: Node): Seq[String] = {
               node.getChildren.asScala.toSeq.flatMap {
                 case t: TextNode => Seq(t.getText)
@@ -315,7 +315,7 @@ class PlayDoc(
     // Most files will be accessed multiple times from the same markdown file, no point in opening them many times
     // so memoize them.  This cache is only per file rendered, so does not need to be thread safe.
     val repo = Memoize[String, Option[Seq[String]]] { path =>
-      codeRepository.loadFile(path) { is => IOUtils.readLines(is).asScala.toSeq }
+      codeRepository.loadFile(path) { is => IOUtils.readLines(is, "utf-8").asScala.toSeq }
     }
 
     def visit(node: Node, visitor: Visitor, printer: Printer) =
