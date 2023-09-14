@@ -1,5 +1,3 @@
-import interplay.ScalaVersions._
-
 // Customise sbt-dynver's behaviour to make it work with tags which aren't v-prefixed
 (ThisBuild / dynverVTagPrefix) := false
 
@@ -11,9 +9,14 @@ Global / onLoad := (Global / onLoad).value.andThen { s =>
 }
 
 lazy val `play-doc` = (project in file("."))
-  .enablePlugins(PlayLibrary, SbtTwirl)
+  .enablePlugins(Omnidoc, SbtTwirl)
   .settings(
-    crossScalaVersions := Seq(scala212, scala213, scala3),
+    organization         := "com.typesafe.play",
+    organizationName     := "The Play Framework Project",
+    organizationHomepage := Some(url("https://playframework.com")),
+    homepage             := Some(url(s"https://github.com/playframework/${Omnidoc.repoName}")),
+    licenses             := Seq("Apache-2.0" -> url("https://www.apache.org/licenses/LICENSE-2.0.html")),
+    crossScalaVersions   := Seq("2.12.18", "2.13.12", "3.3.1"),
     scalacOptions ++= {
       CrossVersion.partialVersion(scalaVersion.value) match {
         case Some((2, _)) =>
@@ -47,8 +50,6 @@ scalacOptions ++= Seq(
   "-release",
   "11",
 )
-
-(ThisBuild / playBuildRepoName) := "play-doc"
 
 addCommandAlias(
   "validateCode",
