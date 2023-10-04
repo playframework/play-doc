@@ -56,6 +56,7 @@ javacOptions ++= Seq(
   "-encoding",
   "UTF-8",
 )
+doc / javacOptions := Seq("-source", "11")
 
 scalacOptions ++= Seq(
   "-release",
