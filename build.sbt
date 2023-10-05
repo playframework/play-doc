@@ -11,7 +11,7 @@ Global / onLoad := (Global / onLoad).value.andThen { s =>
 lazy val `play-doc` = (project in file("."))
   .enablePlugins(Omnidoc, SbtTwirl)
   .settings(
-    organization         := "com.typesafe.play",
+    organization         := "org.playframework",
     organizationName     := "The Play Framework Project",
     organizationHomepage := Some(url("https://playframework.com")),
     homepage             := Some(url(s"https://github.com/playframework/${Omnidoc.repoName}")),

@@ -104,7 +104,7 @@ class PlayDocSpec extends Specification {
       oldRenderer.render("""
                            | Here is some code:
                            |
-                           |     addSbtPlugin("com.typesafe.play" % "sbt-plugin" % "%PLAY_VERSION%")
+                           |     addSbtPlugin("org.playframework" % "sbt-plugin" % "%PLAY_VERSION%")
                            |
         """.stripMargin) must contain("% &quot;2.1.3&quot;)")
     }
