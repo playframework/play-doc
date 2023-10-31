@@ -197,7 +197,7 @@ class PlayDoc(
         val parts = link.split('|')
         val href  = if (singlePage) "#" + parts.tail.head else addExtension(parts.tail.head)
         (href, parts.head)
-      case image if image.endsWith(".png") =>
+      case image if Seq("png", "svg").exists(suffix => image.endsWith("." + suffix)) =>
         val link = image match {
           case full if full.startsWith("http://")   => full
           case absolute if absolute.startsWith("/") => resources + absolute
