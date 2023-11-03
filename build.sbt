@@ -1,3 +1,9 @@
+// Copyright (C) from 2022 The Play Framework Contributors <https://github.com/playframework>, 2011-2021 Lightbend Inc. <https://www.lightbend.com>
+
+import de.heikoseeberger.sbtheader.HeaderPlugin.autoImport.HeaderPattern.commentBetween
+import de.heikoseeberger.sbtheader.CommentStyle
+import de.heikoseeberger.sbtheader.FileType
+import de.heikoseeberger.sbtheader.LineCommentCreator
 // Customise sbt-dynver's behaviour to make it work with tags which aren't v-prefixed
 (ThisBuild / dynverVTagPrefix) := false
 
@@ -9,7 +15,7 @@ Global / onLoad := (Global / onLoad).value.andThen { s =>
 }
 
 lazy val `play-doc` = (project in file("."))
-  .enablePlugins(Omnidoc, SbtTwirl)
+  .enablePlugins(Omnidoc, SbtTwirl, HeaderPlugin)
   .settings(
     organization         := "org.playframework",
     organizationName     := "The Play Framework Project",
@@ -23,7 +29,23 @@ lazy val `play-doc` = (project in file("."))
       "contact@playframework.com",
       url("https://github.com/playframework")
     ),
-    pomIncludeRepository := { _ => false },
+    headerLicense := Some(
+      HeaderLicense.Custom(
+        "Copyright (C) from 2022 The Play Framework Contributors <https://github.com/playframework>, 2011-2021 Lightbend Inc. <https://www.lightbend.com>"
+      )
+    ),
+    headerMappings ++= Map(
+      FileType("sbt")        -> HeaderCommentStyle.cppStyleLineComment,
+      FileType("properties") -> HeaderCommentStyle.hashLineComment,
+      FileType("md") -> CommentStyle(new LineCommentCreator("<!---", "-->"), commentBetween("<!---", "*", "-->"))
+    ),
+    (Compile / headerSources) ++=
+      ((baseDirectory.value ** ("*.properties" || "*.md" || "*.sbt"))
+        --- (baseDirectory.value ** "target" ** "*")
+        --- (baseDirectory.value / "src/test/resources" ** "*")).get ++
+        (baseDirectory.value / "project" ** "*.scala" --- (baseDirectory.value ** "target" ** "*")).get,
+    (Test / headerResources) := Seq(),
+    pomIncludeRepository     := { _ => false },
     scalacOptions ++= {
       CrossVersion.partialVersion(scalaVersion.value) match {
         case Some((2, _)) =>
@@ -71,6 +93,7 @@ scalacOptions ++= Seq(
 addCommandAlias(
   "validateCode",
   List(
+    "headerCheckAll",
     "scalafmtSbtCheck",
     "scalafmtCheckAll",
   ).mkString(";")
