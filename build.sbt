@@ -66,7 +66,7 @@ libraryDependencies ++= Seq(
   ("org.pegdown"  % "pegdown"        % "1.6.0").exclude("org.parboiled", "parboiled-java"),
   "org.parboiled" % "parboiled-java" % "1.4.1",
   "commons-io"    % "commons-io"     % "2.16.1",
-  "org.specs2"   %% "specs2-core"    % "4.20.5" % Test
+  "org.specs2"   %% "specs2-core"    % "4.20.7" % Test
 )
 
 javacOptions ++= Seq(
