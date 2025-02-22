@@ -71,18 +71,18 @@ libraryDependencies ++= Seq(
 
 javacOptions ++= Seq(
   "--release",
-  "11",
+  "17",
   "-Xlint:deprecation",
   "-Xlint:unchecked",
   "-Xlint:-options",
   "-encoding",
   "UTF-8",
 )
-doc / javacOptions := Seq("-source", "11")
+doc / javacOptions := Seq("-source", "17")
 
 scalacOptions ++= Seq(
   "-release",
-  "11",
+  "17",
   "-deprecation",
   "-feature",
   "-unchecked",
