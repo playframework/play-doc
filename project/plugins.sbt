@@ -2,5 +2,5 @@
 
 addSbtPlugin("org.playframework.twirl" % "sbt-twirl"      % "2.0.8")
 addSbtPlugin("org.scalameta"           % "sbt-scalafmt"   % "2.5.4")
-addSbtPlugin("com.github.sbt"          % "sbt-ci-release" % "1.9.3")
+addSbtPlugin("com.github.sbt"          % "sbt-ci-release" % "1.11.0")
 addSbtPlugin("de.heikoseeberger"       % "sbt-header"     % "5.10.0")
