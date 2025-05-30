@@ -149,7 +149,7 @@ class PlayDoc(
       // Recursively search for Sidebar
       def findSideBar(file: Option[File]): Option[String] =
         file match {
-          case None => None
+          case None         => None
           case Some(parent) =>
             val sidebar = render(parent.getPath + "/_Sidebar.md", headerIds = false)
             sidebar.orElse(findSideBar(Option(parent.getParentFile)))
@@ -157,7 +157,7 @@ class PlayDoc(
 
       def findBreadcrumbs(file: Option[File]): Option[String] =
         file match {
-          case None => None
+          case None         => None
           case Some(parent) =>
             val breadcrumbs = render(parent.getPath + "/_Breadcrumbs.md", headerIds = false)
             breadcrumbs.orElse(findBreadcrumbs(Option(parent.getParentFile)))
@@ -241,7 +241,7 @@ class PlayDoc(
           new TocSerializer(toc)
         )
       ) {
-        var headingsSeen = Map.empty[String, Int]
+        var headingsSeen                     = Map.empty[String, Int]
         def headingToAnchor(heading: String) = {
           val anchor = FastEncoder.encode(heading.replace(' ', '-'))
           headingsSeen
@@ -385,7 +385,7 @@ class PlayDoc(
                   state.skip match {
                     case Some(n) if n > 1 => state.copy(skip = Some(n - 1))
                     case Some(n)          => state.copy(skip = None)
-                    case None =>
+                    case None             =>
                       line match {
                         case Insert(code)      => state.appendLine(code)
                         case SkipN(n)          => state.copy(skip = Some(n.toInt))
