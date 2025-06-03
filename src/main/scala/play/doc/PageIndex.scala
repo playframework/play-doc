@@ -93,7 +93,7 @@ class PageIndex(val toc: Toc, path: Option[String] = None) {
 
   private def findNext(name: String, nav: List[Toc]): Option[TocTree] = {
     nav match {
-      case Nil => None
+      case Nil         => None
       case toc :: rest =>
         toc.nodes.view
           .dropWhile(_._1 != name)
@@ -159,7 +159,7 @@ object PageIndex {
         // Remaining lines are the entries of the contents
         val tocNodes = lines.map { entry =>
           val linkAndTitle :: params = entry.split(";").toList
-          val (link, title) = {
+          val (link, title)          = {
             linkAndTitle.split(":", 2) match {
               case Array(p)    => p -> p
               case Array(p, t) => p -> t
