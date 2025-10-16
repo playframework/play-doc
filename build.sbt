@@ -22,7 +22,7 @@ lazy val `play-doc` = (project in file("."))
     organizationHomepage := Some(url("https://playframework.com")),
     homepage             := Some(url(s"https://github.com/playframework/${Omnidoc.repoName}")),
     licenses             := Seq("Apache-2.0" -> url("https://www.apache.org/licenses/LICENSE-2.0.html")),
-    crossScalaVersions   := Seq("2.12.20", "2.13.17", "3.3.6"),
+    crossScalaVersions   := Seq("2.12.20", "2.13.17", "3.3.7"),
     developers += Developer(
       "playframework",
       "The Play Framework Contributors",
