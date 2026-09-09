@@ -19,15 +19,16 @@ lazy val `play-doc` = (project in file("."))
   .settings(
     organization         := "org.playframework",
     organizationName     := "The Play Framework Project",
-    organizationHomepage := Some(url("https://playframework.com")),
-    homepage             := Some(url(s"https://github.com/playframework/${Omnidoc.repoName}")),
-    licenses             := Seq("Apache-2.0" -> url("https://www.apache.org/licenses/LICENSE-2.0.html")),
+    organizationHomepage := Some(uri("https://playframework.com")),
+    homepage             := Some(uri(s"https://github.com/playframework/${Omnidoc.repoName}")),
+    licenses             := Seq("Apache-2.0" -> uri("https://www.apache.org/licenses/LICENSE-2.0.html")),
     crossScalaVersions   := Seq("2.12.21", "2.13.18", "3.8.4"),
+    exportJars           := false,
     developers += Developer(
       "playframework",
       "The Play Framework Contributors",
       "contact@playframework.com",
-      url("https://github.com/playframework")
+      uri("https://github.com/playframework")
     ),
     headerLicense := Some(
       HeaderLicense.Custom(
@@ -39,12 +40,13 @@ lazy val `play-doc` = (project in file("."))
       FileType("properties") -> HeaderCommentStyle.hashLineComment,
       FileType("md") -> CommentStyle(new LineCommentCreator("<!---", "-->"), commentBetween("<!---", "*", "-->"))
     ),
-    (Compile / headerSources) ++=
+    (Compile / headerSources) ++= Def.uncached(
       ((baseDirectory.value ** ("*.properties" || "*.md" || "*.sbt"))
         --- (baseDirectory.value ** "target" ** "*")
-        --- (baseDirectory.value / "src/test/resources" ** "*")).get ++
-        (baseDirectory.value / "project" ** "*.scala" --- (baseDirectory.value ** "target" ** "*")).get,
-    (Test / headerResources) := Seq(),
+        --- (baseDirectory.value / "src/test/resources" ** "*")).get() ++
+        (baseDirectory.value / "project" ** "*.scala" --- (baseDirectory.value ** "target" ** "*")).get()
+    ),
+    (Test / headerResources) := Def.uncached(Seq()),
     pomIncludeRepository     := { _ => false },
     scalacOptions ++= {
       CrossVersion.partialVersion(scalaVersion.value) match {
