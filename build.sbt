@@ -4,6 +4,10 @@ import sbtheader.HeaderPlugin.autoImport.HeaderPattern.commentBetween
 import sbtheader.CommentStyle
 import sbtheader.FileType
 import sbtheader.LineCommentCreator
+import Dependencies._
+
+ThisBuild / resolvers += Resolver.sonatypeCentralSnapshots
+
 // Customise sbt-dynver's behaviour to make it work with tags which aren't v-prefixed
 (ThisBuild / dynverVTagPrefix) := false
 
@@ -22,7 +26,8 @@ lazy val `play-doc` = (project in file("."))
     organizationHomepage := Some(uri("https://playframework.com")),
     homepage             := Some(uri(s"https://github.com/playframework/${Omnidoc.repoName}")),
     licenses             := Seq("Apache-2.0" -> uri("https://www.apache.org/licenses/LICENSE-2.0.html")),
-    crossScalaVersions   := Seq("2.12.21", "2.13.18", "3.9.0"),
+    scalaVersion         := resolveScalaVersion(sys.props.getOrElse("scala.version", scala213Version)),
+    crossScalaVersions   := publishedScalaVersions,
     exportJars           := false,
     developers += Developer(
       "playframework",
@@ -90,7 +95,7 @@ scalacOptions ++= Seq(
   "-unchecked",
   "-encoding",
   "utf8"
-)
+) ++ (if (scalaVersion.value.startsWith("3.3.")) Seq("-Yfuture-lazy-vals") else Seq.empty)
 
 addCommandAlias(
   "validateCode",
