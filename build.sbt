@@ -4,9 +4,6 @@ import sbtheader.HeaderPlugin.autoImport.HeaderPattern.commentBetween
 import sbtheader.CommentStyle
 import sbtheader.FileType
 import sbtheader.LineCommentCreator
-import Dependencies._
-
-ThisBuild / resolvers += Resolver.sonatypeCentralSnapshots
 
 // Customise sbt-dynver's behaviour to make it work with tags which aren't v-prefixed
 (ThisBuild / dynverVTagPrefix) := false
