@@ -25,7 +25,7 @@ jobs:
       - "check-code-style"
     uses: playframework/.github/.github/workflows/cmd.yml@unblock-repo_scala_sbt_org
     with:
-      java: 21, 17
+      java: 25, 21, 17
       # Symbolic lanes resolve to exact versions in project/Dependencies.scala.
       scala: 2.12.x, 2.13.x, 3.3.x, 3.9.x, 3.next
       cmd: sbt -Dscala.version=$MATRIX_SCALA testFull
