@@ -2,7 +2,7 @@
 
 resolvers += Resolver.sonatypeCentralSnapshots
 
-addSbtPlugin("org.playframework.twirl" % "sbt-twirl"      % "2.1.0-M9+179-f54ceedd-SNAPSHOT")
+addSbtPlugin("org.playframework.twirl" % "sbt-twirl"      % "2.1.0-M9+181-7ef06d30-SNAPSHOT")
 addSbtPlugin("org.scalameta"           % "sbt-scalafmt"   % "2.6.2")
 addSbtPlugin("com.github.sbt"          % "sbt-ci-release" % "1.12.1")
 addSbtPlugin("com.github.sbt"          % "sbt-header"     % "5.11.0")
